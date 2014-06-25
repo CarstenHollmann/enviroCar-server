@@ -33,6 +33,8 @@ import com.google.inject.Inject;
 
 import org.envirocar.server.rest.encoding.JSONEntityEncoder;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 /**
  * TODO JavaDoc
  *
@@ -71,5 +73,5 @@ public abstract class AbstractJSONMessageBodyWriter<T>
         return -1;
     }
 
-    public abstract ObjectNode encodeJSON(T t, MediaType mt);
+    public abstract JsonNode encodeJSON(T t, MediaType mt);
 }
