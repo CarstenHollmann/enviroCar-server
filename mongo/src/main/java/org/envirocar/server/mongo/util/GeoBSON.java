@@ -388,7 +388,7 @@ public class GeoBSON implements GeometryConverter<BSONObject> {
         BasicBSONList list = new BasicBSONList();
         list.add(envelope.getMinX());
         list.add(envelope.getMinY());
-        list.add(envelope.getMaxY());
+        list.add(envelope.getMaxX());
         list.add(envelope.getMaxY());
         return list;
     }

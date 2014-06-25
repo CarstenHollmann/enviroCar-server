@@ -406,7 +406,7 @@ public class GeoJSON implements GeometryConverter<JsonNode> {
         ArrayNode list = getJsonFactory().arrayNode();
         list.add(envelope.getMinX());
         list.add(envelope.getMinY());
-        list.add(envelope.getMaxY());
+        list.add(envelope.getMaxX());
         list.add(envelope.getMaxY());
         return list;
     }
