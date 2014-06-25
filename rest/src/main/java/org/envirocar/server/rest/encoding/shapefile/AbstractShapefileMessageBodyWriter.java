@@ -29,13 +29,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 
-import org.apache.commons.io.IOUtils;
 import org.envirocar.server.rest.MediaTypes;
 import org.envirocar.server.rest.encoding.ShapefileTrackEncoder;
 
+import com.google.common.io.ByteStreams;
+
 /**
  * TODO: Javadoc
- * 
+ *
  * @author Benjamin Pross
  */
 @Produces(MediaTypes.APPLICATION_ZIPPED_SHP)
@@ -47,7 +48,7 @@ public abstract class AbstractShapefileMessageBodyWriter<T> implements
     public AbstractShapefileMessageBodyWriter(Class<T> classType) {
         this.classType = classType;
     }
-    
+
 	public abstract File encodeShapefile(T t, MediaType mt);
 
 	@Override
@@ -67,13 +68,9 @@ public abstract class AbstractShapefileMessageBodyWriter<T> implements
 	public void writeTo(T t, Class<?> type, Type genericType, Annotation[] annotations,
 			MediaType mediaType, MultivaluedMap<String, Object> h,
 			OutputStream out) throws IOException, WebApplicationException {
-		
 		File shapeFile = encodeShapefile(t, mediaType);
-		
 		FileInputStream fileInputStream = new FileInputStream(shapeFile);
-		
-		IOUtils.copy(fileInputStream, out);
-		
+        ByteStreams.copy(fileInputStream, out);
 	}
 
 }
