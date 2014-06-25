@@ -35,6 +35,7 @@ import org.envirocar.server.rest.rights.AccessRights;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * TODO JavaDoc
@@ -46,17 +47,20 @@ public class TrackJSONEncoder extends AbstractJSONEntityEncoder<Track> {
     private final JSONEntityEncoder<Sensor> sensorEncoder;
     private final JSONEntityEncoder<Measurements> measurementsEncoder;
     private final JSONEntityEncoder<User> userEncoder;
+    private final JSONEntityEncoder<Envelope> envelopeEncoder;
     private final DataService dataService;
 
     @Inject
     public TrackJSONEncoder(JSONEntityEncoder<Sensor> sensorEncoder,
                             JSONEntityEncoder<Measurements> measurementsEncoder,
                             JSONEntityEncoder<User> userEncoder,
+                            JSONEntityEncoder<Envelope> envelopeEncoder,
                             DataService dataService) {
         super(Track.class);
         this.sensorEncoder = sensorEncoder;
         this.userEncoder = userEncoder;
         this.measurementsEncoder = measurementsEncoder;
+        this.envelopeEncoder = envelopeEncoder;
         this.dataService = dataService;
     }
 
@@ -133,6 +137,11 @@ public class TrackJSONEncoder extends AbstractJSONEntityEncoder<Track> {
             if (t.hasName() && rights.canSeeNameOf(t)) {
                 track.put(JSONConstants.NAME_KEY, t.getName());
             }
+        }
+
+        if (t.hasBoundingBox() && rights.canSeeBoundingBoxOf(t)) {
+            track.put(GeoJSONConstants.BBOX_KEY, envelopeEncoder.encodeJSON(t
+                      .getBoundingBox(), rights, mediaType));
         }
         return track;
     }

@@ -36,4 +36,5 @@ public interface GeoJSONConstants {
     String FEATURE_TYPE = "Feature";
     String FEATURES_KEY = "features";
     String PROPERTIES_KEY = "properties";
+    String BBOX_KEY = "bbox";
 }
