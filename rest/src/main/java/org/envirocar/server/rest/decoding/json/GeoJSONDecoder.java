@@ -46,7 +46,7 @@ public class GeoJSONDecoder extends AbstractJSONEntityDecoder<Geometry> {
     @Override
     public Geometry decode(JsonNode j, MediaType mt) {
         try {
-            return geoJSON.decode(j);
+            return geoJSON.decodeGeometry(j);
         } catch (GeometryConverterException ex) {
             throw new WebApplicationException(ex, Status.BAD_REQUEST);
         }

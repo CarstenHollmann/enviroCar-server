@@ -16,8 +16,9 @@
  */
 package org.envirocar.server.rest.provider;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.util.Random;
@@ -182,7 +183,7 @@ public class GeoJSONTest {
         try {
             GeoJSON conv = new GeoJSON(geometryFactory, jsonNodeFactory);
             JsonNode json = conv.encode(geom);
-            Geometry parsed = conv.decode(json);
+            Geometry parsed = conv.decodeGeometry(json);
             assertThat(geom, is(equalTo(parsed)));
             assertThat(json, is(validate
                     .validInstanceOf("http://schema.envirocar.org/geometry.json#")));
