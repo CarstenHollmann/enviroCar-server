@@ -77,7 +77,6 @@ public class MongoMeasurementDao extends AbstractMongoDao<ObjectId, MongoMeasure
             .valueOf(TRACK_NAME_PATH);
     public static final String TRACK_VALUE = MongoUtils
             .valueOf(MongoMeasurement.TRACK);
-    private final MongoDB mongoDB;
     private final GeometryConverter<BSONObject> geometryConverter;
     @Inject
     private MongoTrackDao trackDao;
@@ -86,7 +85,6 @@ public class MongoMeasurementDao extends AbstractMongoDao<ObjectId, MongoMeasure
     protected MongoMeasurementDao(MongoDB mongoDB,
                                   GeometryConverter<BSONObject> geometryConverter) {
         super(MongoMeasurement.class, mongoDB);
-        this.mongoDB = mongoDB;
         this.geometryConverter = geometryConverter;
     }
 
@@ -107,6 +105,7 @@ public class MongoMeasurementDao extends AbstractMongoDao<ObjectId, MongoMeasure
         delete(((MongoMeasurement) m).getId());
          if (m.hasTrack()) {
             updateTrackTimeForDeletedMeasurement(m);
+            trackDao.calculateBoundingBox(m.getTrack());
         }
     }
 
@@ -161,7 +160,7 @@ public class MongoMeasurementDao extends AbstractMongoDao<ObjectId, MongoMeasure
     }
 
     private Measurements getMongo(MeasurementFilter request) {
-        BasicDBObjectBuilder q = new BasicDBObjectBuilder();
+        BasicDBObjectBuilder q = bson();
         if (request.hasGeometry()) {
             q.add(MongoMeasurement.GEOMETRY,
                   withinGeometry(request.getGeometry()));
@@ -259,10 +258,10 @@ public class MongoMeasurementDao extends AbstractMongoDao<ObjectId, MongoMeasure
         }
         return toKeyList(out.results());
     }
-    
+
     private AggregationOutput aggregate(DBObject firstOp,
                                         DBObject... additionalOps) {
-        AggregationOutput result = mongoDB.getDatastore()
+        AggregationOutput result = getMongoDB().getDatastore()
                 .getCollection(MongoMeasurement.class)
                 .aggregate(firstOp, additionalOps);
         result.getCommandResult().throwOnError();
@@ -311,8 +310,8 @@ public class MongoMeasurementDao extends AbstractMongoDao<ObjectId, MongoMeasure
         List<Key<MongoTrack>> keys = Lists.newLinkedList();
         for (DBObject obj : res) {
             BasicDBList list = (BasicDBList) obj.get(TRACKS);
-            for (int i = 0; i < list.size(); i++) {
-                DBRef ref = (DBRef) list.get(i);
+            for (Object p : list) {
+                DBRef ref = (DBRef) p;
                 Key<MongoTrack> key = getMapper().refToKey(ref);
                 keys.add(key);
             }
@@ -321,8 +320,8 @@ public class MongoMeasurementDao extends AbstractMongoDao<ObjectId, MongoMeasure
     }
 
     private Measurements query(DBObject query, Pagination p) {
-        final Mapper mapper = this.mongoDB.getMapper();
-        final Datastore ds = this.mongoDB.getDatastore();
+        final Mapper mapper = getMapper();
+        final Datastore ds = getMongoDB().getDatastore();
         final DBCollection coll = ds.getCollection(MongoMeasurement.class);
 
         DBCursor cursor = coll.find(query, null);
