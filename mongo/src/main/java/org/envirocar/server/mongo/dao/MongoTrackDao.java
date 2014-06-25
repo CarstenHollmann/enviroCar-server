@@ -65,7 +65,6 @@ public class MongoTrackDao extends AbstractMongoDao<ObjectId, MongoTrack, Tracks
     @Inject
     public MongoTrackDao(MongoDB mongoDB) {
         super(MongoTrack.class, mongoDB);
-        this.mongoDB = mongoDB;
     }
 
     public MongoMeasurementDao getMeasurementDao() {
