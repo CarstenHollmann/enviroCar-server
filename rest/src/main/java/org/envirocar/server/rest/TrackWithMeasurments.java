@@ -27,6 +27,7 @@ import org.envirocar.server.core.entities.User;
 import org.joda.time.DateTime;
 
 import com.google.common.collect.Lists;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
@@ -98,12 +99,12 @@ public class TrackWithMeasurments implements Track, Iterable<Measurement> {
     }
 
     @Override
-    public Geometry getBoundingBox() {
+    public Envelope getBoundingBox() {
         return track.getBoundingBox();
     }
 
     @Override
-    public void setBoundingBox(Geometry bbox) {
+    public void setBoundingBox(Envelope bbox) {
         track.setBoundingBox(bbox);
     }
 
