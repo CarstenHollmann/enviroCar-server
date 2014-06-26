@@ -18,6 +18,7 @@ package org.envirocar.server.core.util;
 
 import org.envirocar.server.core.exception.GeometryConverterException;
 
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.LineString;
@@ -33,7 +34,7 @@ import com.vividsolutions.jts.geom.Polygon;
  * @author Christian Autermann <autermann@uni-muenster.de>
  */
 public interface GeometryConverter<T> {
-    Geometry decode(T t) throws GeometryConverterException;
+    Geometry decodeGeometry(T t) throws GeometryConverterException;
 
     GeometryCollection decodeGeometryCollection(T t) throws
             GeometryConverterException;
@@ -51,6 +52,8 @@ public interface GeometryConverter<T> {
 
     MultiPolygon decodeMultiPolygon(T t) throws GeometryConverterException;
 
+    Envelope decodeEnvelope(T t) throws GeometryConverterException;
+
     T encode(Geometry value) throws GeometryConverterException;
 
     T encode(GeometryCollection geometry) throws GeometryConverterException;
@@ -66,4 +69,6 @@ public interface GeometryConverter<T> {
     T encode(MultiPoint geometry) throws GeometryConverterException;
 
     T encode(MultiPolygon geometry) throws GeometryConverterException;
+
+    T encode(Envelope envelope) throws GeometryConverterException;
 }

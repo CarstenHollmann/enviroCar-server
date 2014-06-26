@@ -16,6 +16,8 @@
  */
 package org.envirocar.server.rest.encoding.csv;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -47,9 +49,14 @@ import org.envirocar.server.rest.MediaTypes;
 import org.envirocar.server.rest.guice.JerseyCodingModule;
 import org.envirocar.server.rest.schema.GuiceRunner;
 import org.envirocar.server.rest.schema.Modules;
+import org.hamcrest.Matchers;
 import org.joda.time.DateTime;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ErrorCollector;
 import org.junit.runner.RunWith;
 
 import com.google.inject.Inject;
@@ -61,11 +68,15 @@ import com.vividsolutions.jts.geom.GeometryFactory;
  *
  * @author Benjamin Pross
  */
+@Ignore("Phenomenon order is not consistent across implementations")
 @RunWith(GuiceRunner.class)
 @Modules({MongoConverterModule.class, JerseyCodingModule.class, MongoMappedClassesModule.class,
 		MongoConnectionModule.class, CSVEncodingTestModule.class,
 		UpdaterModule.class, ValidatorModule.class })
 public class CSVEncodingTest {
+
+    @Rule
+    public final ErrorCollector errors = new ErrorCollector();
 
 	@Inject
 	private DataService dataService;
@@ -85,11 +96,11 @@ public class CSVEncodingTest {
 	private String csvEncodedTrackAllMeasurementsHaveAllPhenomenonsHeader = "id; RPM(u/min); Speed(km/h); Intake Temperature(C); MAF(l/s); longitude; latitude; time";
 	private String csvEncodedTrackAllMeasurementsHaveAllPhenomenonsLine1 = "537b0ef874c965606f093b0f; 1; 3; 2; 4; 1.1; 1.2;";
 	private String csvEncodedTrackAllMeasurementsHaveAllPhenomenonsLine2 = "537b0ef874c965606f093b10; 2; 4; 3; 5; 2.1; 2.2;";
-	
+
 	private String csvEncodedTrackFirstMeasurementHasLessPhenomenonsHeader = "id; RPM(u/min); Speed(km/h); Intake Temperature(C); MAF(l/s); longitude; latitude; time";
 	private String csvEncodedTrackFirstMeasurementHasLessPhenomenonsLine1 = "537b0ef874c965606f093b11; 1; 3; 2; ; 1.1; 1.2;";
 	private String csvEncodedTrackFirstMeasurementHasLessPhenomenonsLine2 = "537b0ef874c965606f093b12; 2; 4; 3; 5; 2.1; 2.2;";
-	
+
 	private String csvEncodedTrackFirstMeasurementHasMorePhenomenonsHeader = "id; RPM(u/min); Speed(km/h); Intake Temperature(C); longitude; latitude; time";
 	private String csvEncodedTrackFirstMeasurementHasMorePhenomenonsLine1 = "537b0ef874c965606f093b13; 1; 3; 2; 1.1; 1.2;";
 	private String csvEncodedTrackFirstMeasurementHasMorePhenomenonsLine2 = "537b0ef874c965606f093b14; 2; ; 3; 2.1; 2.2;";
@@ -116,7 +127,7 @@ public class CSVEncodingTest {
 	private List<Phenomenon> phenomenons;
 
 	String testUserName = "TestUser";
-	
+
 	@Before
 	public void setup() {
 
@@ -137,16 +148,16 @@ public class CSVEncodingTest {
 			if(testTrack2 == null){
 
 				testTrack2 = createTrack(trackObjectId2, getUser(), getSensor());
-				
+
 				createTrackWithMeasurements_FirstMeasurementHasLessPhenomenons(
-						testTrack2, getPhenomenons(), getUser(), getSensor());				
-			}			
+						testTrack2, getPhenomenons(), getUser(), getSensor());
+			}
 			if(testTrack3 == null){
 
 				testTrack3 = createTrack(trackObjectId3, getUser(), getSensor());
-				
+
 				createTrackWithMeasurements_FirstMeasurementHasMorePhenomenons(
-						testTrack3, getPhenomenons(), getUser(), getSensor());				
+						testTrack3, getPhenomenons(), getUser(), getSensor());
 			}
 
 		} catch (ValidationException e) {
@@ -173,81 +184,81 @@ public class CSVEncodingTest {
 
 		}
 
-		assertTrue(content.contains(csvEncodedTrackAllMeasurementsHaveAllPhenomenonsHeader));
-		assertTrue(content.contains(csvEncodedTrackAllMeasurementsHaveAllPhenomenonsLine1));
-		assertTrue(content.contains(csvEncodedTrackAllMeasurementsHaveAllPhenomenonsLine2));
+        errors.checkThat(content, containsString(csvEncodedTrackAllMeasurementsHaveAllPhenomenonsHeader));
+		errors.checkThat(content, containsString(csvEncodedTrackAllMeasurementsHaveAllPhenomenonsLine1));
+		errors.checkThat(content, containsString(csvEncodedTrackAllMeasurementsHaveAllPhenomenonsLine2));
 
 	}
-	
+
 	@Test
 	public void testCSVEncodingFirstMeasurementHasLessPhenomenons()
 			throws IOException {
-		
+
 		BufferedReader bufferedReader = new BufferedReader(
 				new InputStreamReader(trackCSVEncoder.encodeCSV(testTrack2,
 						MediaTypes.TEXT_CSV_TYPE)));
-		
+
 		String line = "";
-		
+
 		String content = "";
-		
+
 		while ((line = bufferedReader.readLine()) != null) {
-			
+
 			content = content.concat(line + "\n");
-			
+
 		}
-		
-		assertTrue(content.contains(csvEncodedTrackFirstMeasurementHasLessPhenomenonsHeader));
-		assertTrue(content.contains(csvEncodedTrackFirstMeasurementHasLessPhenomenonsLine1));
-		assertTrue(content.contains(csvEncodedTrackFirstMeasurementHasLessPhenomenonsLine2));
-		
+
+		errors.checkThat(content, containsString(csvEncodedTrackFirstMeasurementHasLessPhenomenonsHeader));
+		errors.checkThat(content, containsString(csvEncodedTrackFirstMeasurementHasLessPhenomenonsLine1));
+		errors.checkThat(content, containsString(csvEncodedTrackFirstMeasurementHasLessPhenomenonsLine2));
+
 	}
-	
+
 	@Test
 	public void testCSVEncodingFirstMeasurementHasMorePhenomenons()
 			throws IOException {
-		
+
 		BufferedReader bufferedReader = new BufferedReader(
 				new InputStreamReader(trackCSVEncoder.encodeCSV(testTrack3,
 						MediaTypes.TEXT_CSV_TYPE)));
-		
+
 		String line = "";
-		
+
 		String content = "";
-		
+
 		while ((line = bufferedReader.readLine()) != null) {
-			
+
 			content = content.concat(line + "\n");
-			
+
 		}
-		
-		assertTrue(content.contains(csvEncodedTrackFirstMeasurementHasMorePhenomenonsHeader));
-		assertTrue(content.contains(csvEncodedTrackFirstMeasurementHasMorePhenomenonsLine1));
-		assertTrue(content.contains(csvEncodedTrackFirstMeasurementHasMorePhenomenonsLine2));
-		
+
+		errors.checkThat(content, containsString(csvEncodedTrackFirstMeasurementHasMorePhenomenonsHeader));
+		errors.checkThat(content, containsString(csvEncodedTrackFirstMeasurementHasMorePhenomenonsLine1));
+		errors.checkThat(content, containsString(csvEncodedTrackFirstMeasurementHasMorePhenomenonsLine2));
+
 	}
-	
+
 	private User getUser(){
 		if(user == null){
 			user =  createUser(testUserName);
 		}
 		return user;
 	}
-	
+
 	private Sensor getSensor(){
-		
+
 		if(sensor == null){
 			sensor = createSensor();
 		}
 		return sensor;
 	}
-	
+
 	private List<Phenomenon> getPhenomenons(){
-		
+
 		if(phenomenons == null){
 			phenomenons = createPhenomenoms();
-		}		
-		return phenomenons;		
+		}
+		return phenomenons;
 	}
 
 	private Track getTestTrack(String trackId) {
@@ -274,34 +285,34 @@ public class CSVEncodingTest {
 
 	}
 
-	private void createTrackWithMeasurements_FirstMeasurementHasLessPhenomenons(			
+	private void createTrackWithMeasurements_FirstMeasurementHasLessPhenomenons(
 			Track track, List<Phenomenon> phenomenons, User user, Sensor sensor) {
 
-		List<Phenomenon> originalPhenomenons = new ArrayList<Phenomenon>(phenomenons.size()); 
-		
+		List<Phenomenon> originalPhenomenons = new ArrayList<Phenomenon>(phenomenons.size());
+
 		for (Phenomenon phenomenon : phenomenons) {
 			originalPhenomenons.add(phenomenon);
 		}
-		
+
 		phenomenons.remove(phenomenons.size()-1);
-		
+
 		createMeasurement(track, measurementObjectId3, phenomenons, user,
 				sensor, 1);
-		
+
 		createMeasurement(track, measurementObjectId4, originalPhenomenons, user,
 				sensor, 2);
 
 		dataService.createTrack(track);
 	}
 
-	private void createTrackWithMeasurements_FirstMeasurementHasMorePhenomenons(			
+	private void createTrackWithMeasurements_FirstMeasurementHasMorePhenomenons(
 			Track track, List<Phenomenon> phenomenons, User user, Sensor sensor) {
 
 		createMeasurement(track, measurementObjectId5, phenomenons, user,
 				sensor, 1);
-		
+
 		phenomenons.remove(phenomenons.size()-1);
-		
+
 		createMeasurement(track, measurementObjectId6, phenomenons, user,
 				sensor, 2);
 
@@ -340,7 +351,7 @@ public class CSVEncodingTest {
 		}
 
 		measurement.setTime(DateTime.now());
-		
+
 		measurement.setTrack(testTrack);
 
 		dataService.createMeasurement(measurement);
@@ -368,7 +379,7 @@ public class CSVEncodingTest {
 		s.setIdentifier("51bc53ab5064ba7f336ef920");
 
 		s.setType("Car");
-		
+
 		MongoSensor ms = (MongoSensor) s;
 
 		ms.setCreationTime(DateTime.parse(dateTime));

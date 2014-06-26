@@ -16,7 +16,16 @@
  */
 package org.envirocar.server.mongo.util;
 
-import static org.envirocar.server.core.util.GeoJSONConstants.*;
+import static org.envirocar.server.core.util.GeoJSONConstants.COORDINATES_KEY;
+import static org.envirocar.server.core.util.GeoJSONConstants.GEOMETRIES_KEY;
+import static org.envirocar.server.core.util.GeoJSONConstants.GEOMETRY_COLLECTION_TYPE;
+import static org.envirocar.server.core.util.GeoJSONConstants.LINE_STRING_TYPE;
+import static org.envirocar.server.core.util.GeoJSONConstants.MULTI_LINE_STRING_TYPE;
+import static org.envirocar.server.core.util.GeoJSONConstants.MULTI_POINT_TYPE;
+import static org.envirocar.server.core.util.GeoJSONConstants.MULTI_POLYGON_TYPE;
+import static org.envirocar.server.core.util.GeoJSONConstants.POINT_TYPE;
+import static org.envirocar.server.core.util.GeoJSONConstants.POLYGON_TYPE;
+import static org.envirocar.server.core.util.GeoJSONConstants.TYPE_KEY;
 
 import org.bson.BSONObject;
 import org.bson.types.BasicBSONList;
@@ -29,6 +38,7 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateSequence;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -40,11 +50,7 @@ import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
-/**
- * TODO JavaDoc
- *
- * @author Christian Autermann <autermann@uni-muenster.de>
- */
+
 public class GeoBSON implements GeometryConverter<BSONObject> {
     private final GeometryFactory factory;
 
@@ -53,7 +59,7 @@ public class GeoBSON implements GeometryConverter<BSONObject> {
         this.factory = factory;
     }
 
-    protected BSONObject encodeGeometry(Geometry geometry) throws
+    protected BSONObject encodeNotNullGeometry(Geometry geometry) throws
             GeometryConverterException {
         Preconditions.checkNotNull(geometry);
         if (geometry.isEmpty()) {
@@ -153,7 +159,7 @@ public class GeoBSON implements GeometryConverter<BSONObject> {
         bson.put(TYPE_KEY, GEOMETRY_COLLECTION_TYPE);
         BasicDBList geometries = new BasicDBList();
         for (int i = 0; i < geometry.getNumGeometries(); ++i) {
-            geometries.add(encodeGeometry(geometry.getGeometryN(i)));
+            geometries.add(encodeNotNullGeometry(geometry.getGeometryN(i)));
         }
         bson.put(GEOMETRIES_KEY, geometries);
         return bson;
@@ -207,13 +213,8 @@ public class GeoBSON implements GeometryConverter<BSONObject> {
         if (list.size() != 2) {
             throw new GeometryConverterException("coordinates may only have 2 dimensions");
         }
-        Object x = list.get(0);
-        Object y = list.get(1);
-        if (!(x instanceof Number) || !(y instanceof Number)) {
-            throw new GeometryConverterException("x and y have to be numbers");
-        }
-        return new Coordinate(((Number) x).doubleValue(),
-                              ((Number) y).doubleValue());
+        return new Coordinate(toNumber(list.get(0)),
+                              toNumber(list.get(1)));
     }
 
     protected BasicDBList toList(Object o) throws GeometryConverterException {
@@ -248,7 +249,7 @@ public class GeoBSON implements GeometryConverter<BSONObject> {
         return factory.createPolygon(shell, holes);
     }
 
-    protected Geometry decodeGeometry(Object db) throws
+    protected Geometry decodeNotNullGeometry(Object db) throws
             GeometryConverterException {
         BSONObject bson = (BSONObject) db;
         if (!bson.containsField(TYPE_KEY)) {
@@ -338,18 +339,57 @@ public class GeoBSON implements GeometryConverter<BSONObject> {
         BasicDBList geometries = toList(bson.get(GEOMETRIES_KEY));
         Geometry[] geoms = new Geometry[geometries.size()];
         for (int i = 0; i < geometries.size(); ++i) {
-            geoms[i] = decodeGeometry(geometries.get(i));
+            geoms[i] = decodeNotNullGeometry(geometries.get(i));
         }
         return factory.createGeometryCollection(geoms);
     }
 
     @Override
-    public Geometry decode(BSONObject json) throws GeometryConverterException {
-        return json == null ? null : decodeGeometry(json);
+    public Geometry decodeGeometry(BSONObject json) throws GeometryConverterException {
+        return json == null ? null : decodeNotNullGeometry(json);
     }
 
     @Override
     public BSONObject encode(Geometry value) throws GeometryConverterException {
-        return value == null ? null : encodeGeometry(value);
+        return value == null ? null : encodeNotNullGeometry(value);
+    }
+
+    @Override
+    public BSONObject encode(Envelope envelope) throws GeometryConverterException {
+        return envelope == null ? null : encodeNotNullEnvelope(envelope);
+    }
+
+    @Override
+    public Envelope decodeEnvelope(BSONObject t) throws GeometryConverterException {
+        return t == null ? null : decodeNotNullEnvelope(t);
+    }
+
+    private Envelope decodeNotNullEnvelope(BSONObject t)
+            throws GeometryConverterException {
+        BasicDBList list = toList(t);
+        if (list.size() != 4) {
+            throw new GeometryConverterException("Incorrect envelope size");
+        }
+        return new Envelope(toNumber(list.get(0)),
+                            toNumber(list.get(2)),
+                            toNumber(list.get(1)),
+                            toNumber(list.get(3)));
+    }
+
+    protected double toNumber(Object o)
+            throws GeometryConverterException {
+        if (!(o instanceof Number)) {
+            throw new GeometryConverterException("expected number");
+        }
+        return ((Number) o).doubleValue();
+    }
+
+    protected BSONObject encodeNotNullEnvelope(Envelope envelope) {
+        BasicBSONList list = new BasicBSONList();
+        list.add(envelope.getMinX());
+        list.add(envelope.getMinY());
+        list.add(envelope.getMaxX());
+        list.add(envelope.getMaxY());
+        return list;
     }
 }

@@ -431,7 +431,7 @@ public class NonRestrictiveRights implements AccessRights {
     public boolean canSeeSchema() {
         return true;
     }
-    
+
 	@Override
 	public boolean canSeeAppVersionOf(Track track) {
 		return true;
@@ -464,6 +464,11 @@ public class NonRestrictiveRights implements AccessRights {
 
     @Override
     public boolean canSeeFuelingsOf(User user) {
+        return true;
+    }
+
+    @Override
+    public boolean canSeeBoundingBoxOf(Track track) {
         return true;
     }
 }

@@ -33,6 +33,10 @@ import com.google.inject.assistedinject.Assisted;
 import org.envirocar.server.core.entities.User;
 import org.envirocar.server.rest.MediaTypes;
 
+import com.google.common.base.Charsets;
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hashing;
+
 /**
  * TODO JavaDoc
  *
@@ -57,8 +61,8 @@ public class AvatarResource extends AbstractResource {
     }
 
     protected URI getURI(User user, int size) {
-        String mail = user.hasMail() ? user.getMail() : "";
-        String hash = DigestUtils.md5Hex(mail.trim().toLowerCase());
+        String mail = user.hasMail() ? user.getMail().trim().toLowerCase() : "";
+        String hash = Hashing.md5().hashString(mail, Charsets.UTF_8).toString();
         return UriBuilder.fromUri(GRAVATAR_BASE_URL)
                 .path(hash).queryParam(SIZE, size).build();
     }

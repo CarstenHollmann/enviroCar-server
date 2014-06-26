@@ -30,8 +30,8 @@ import com.google.inject.servlet.GuiceFilter;
  */
 public class EnviroCarServer {
     private static EnviroCarServer instance;
-    private Server server;
-    private Injector injector;
+    private final Server server;
+    private final Injector injector;
 
     public EnviroCarServer() throws Exception {
         server = new Server(9998);
@@ -46,15 +46,15 @@ public class EnviroCarServer {
         server.start();
     }
 
-    public static EnviroCarServer getInstance() throws Exception {
-        return instance == null ? instance = new EnviroCarServer() : instance;
-    }
-
     public Server getServer() {
         return server;
     }
 
     public Injector getInjector() {
         return injector;
+    }
+
+    public static EnviroCarServer getInstance() throws Exception {
+        return instance == null ? instance = new EnviroCarServer() : instance;
     }
 }

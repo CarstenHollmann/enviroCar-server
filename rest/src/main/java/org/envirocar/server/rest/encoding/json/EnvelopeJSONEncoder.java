@@ -14,41 +14,44 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.envirocar.server.rest.decoding.json;
+package org.envirocar.server.rest.encoding.json;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.Provider;
 
+import org.envirocar.server.core.exception.GeometryConverterException;
+import org.envirocar.server.rest.rights.AccessRights;
+import org.envirocar.server.rest.util.GeoJSON;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
-import com.vividsolutions.jts.geom.Geometry;
-
-import org.envirocar.server.core.exception.GeometryConverterException;
-import org.envirocar.server.rest.util.GeoJSON;
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * TODO JavaDoc
  *
- * @author Christian Autermann <autermann@uni-muenster.de>
+ * @author Christian Autermann
  */
 @Provider
-public class GeoJSONDecoder extends AbstractJSONEntityDecoder<Geometry> {
+@Consumes(MediaType.APPLICATION_JSON)
+public class EnvelopeJSONEncoder extends AbstractJSONEntityEncoder<Envelope> {
     private final GeoJSON geoJSON;
 
     @Inject
-    public GeoJSONDecoder(GeoJSON geoJSON) {
-        super(Geometry.class);
+    public EnvelopeJSONEncoder(GeoJSON geoJSON) {
+        super(Envelope.class);
         this.geoJSON = geoJSON;
     }
 
     @Override
-    public Geometry decode(JsonNode j, MediaType mt) {
+    public JsonNode encodeJSON(Envelope t, AccessRights rights, MediaType mt) {
         try {
-            return geoJSON.decodeGeometry(j);
+            return geoJSON.encode(t);
         } catch (GeometryConverterException ex) {
-            throw new WebApplicationException(ex, Status.BAD_REQUEST);
+            throw new WebApplicationException(ex, Status.INTERNAL_SERVER_ERROR);
         }
     }
 }

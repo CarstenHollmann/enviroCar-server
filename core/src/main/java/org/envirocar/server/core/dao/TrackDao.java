@@ -37,4 +37,6 @@ public interface TrackDao {
     Track getById(String id);
 
     Tracks get(TrackFilter request);
+
+    void calculateBoundingBox(Track track);
 }

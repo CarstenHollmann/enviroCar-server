@@ -29,6 +29,7 @@ import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateSequence;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -40,13 +41,9 @@ import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
-/**
- * TODO JavaDoc
- *
- * @author Christian Autermann <autermann@uni-muenster.de>
- */
+
 public class GeoJSON implements GeometryConverter<JsonNode> {
-    protected final GeometryFactory geometryFactory;
+    private final GeometryFactory geometryFactory;
     private final JsonNodeFactory jsonFactory;
 
     @Inject
@@ -65,23 +62,15 @@ public class GeoJSON implements GeometryConverter<JsonNode> {
 
     @Override
     public ObjectNode encode(Geometry value) throws GeometryConverterException {
-        if (value == null) {
-            return null;
-        } else {
-            return encodeGeometry(value);
-        }
+        return value == null ? null : encodeNotNullGeometry(value);
     }
 
     @Override
-    public Geometry decode(JsonNode json) throws GeometryConverterException {
-        if (json == null) {
-            return null;
-        } else {
-            return decodeGeometry(json);
-        }
+    public Geometry decodeGeometry(JsonNode json) throws GeometryConverterException {
+        return json == null ? null : decodeNotNullGeometry(json);
     }
 
-    protected ObjectNode encodeGeometry(Geometry geometry) throws
+    protected ObjectNode encodeNotNullGeometry(Geometry geometry) throws
             GeometryConverterException {
         Preconditions.checkNotNull(geometry);
         if (geometry.isEmpty()) {
@@ -184,7 +173,7 @@ public class GeoJSON implements GeometryConverter<JsonNode> {
         json.put(TYPE_KEY, GEOMETRY_COLLECTION_TYPE);
         ArrayNode geometries = getJsonFactory().arrayNode();
         for (int i = 0; i < geometry.getNumGeometries(); ++i) {
-            geometries.add(encodeGeometry(geometry.getGeometryN(i)));
+            geometries.add(encodeNotNullGeometry(geometry.getGeometryN(i)));
         }
         json.put(GEOMETRIES_KEY, geometries);
         return json;
@@ -284,7 +273,7 @@ public class GeoJSON implements GeometryConverter<JsonNode> {
         return getGeometryFactory().createPolygon(shell, holes);
     }
 
-    protected Geometry decodeGeometry(Object o) throws
+    protected Geometry decodeNotNullGeometry(Object o) throws
             GeometryConverterException {
         if (!(o instanceof ObjectNode)) {
             throw new GeometryConverterException("Cannot decode " + o);
@@ -380,5 +369,45 @@ public class GeoJSON implements GeometryConverter<JsonNode> {
             geoms[i] = decodeGeometry(geometries.get(i));
         }
         return getGeometryFactory().createGeometryCollection(geoms);
+    }
+
+
+     @Override
+    public JsonNode encode(Envelope envelope) throws GeometryConverterException {
+        return envelope == null ? null : encodeNotNullEnvelope(envelope);
+    }
+
+    @Override
+    public Envelope decodeEnvelope(JsonNode t) throws GeometryConverterException {
+        return t == null ? null : decodeNotNullEnvelope(t);
+    }
+
+    private Envelope decodeNotNullEnvelope(JsonNode t)
+            throws GeometryConverterException {
+        ArrayNode list = toList(t);
+        if (list.size() != 4) {
+            throw new GeometryConverterException("Incorrect envelope size");
+        }
+        return new Envelope(toNumber(list.get(0)),
+                            toNumber(list.get(2)),
+                            toNumber(list.get(1)),
+                            toNumber(list.get(3)));
+    }
+
+    protected double toNumber(Object o)
+            throws GeometryConverterException {
+        if (!(o instanceof Number)) {
+            throw new GeometryConverterException("expected number");
+        }
+        return ((Number) o).doubleValue();
+    }
+
+    protected JsonNode encodeNotNullEnvelope(Envelope envelope) {
+        ArrayNode list = getJsonFactory().arrayNode();
+        list.add(envelope.getMinX());
+        list.add(envelope.getMinY());
+        list.add(envelope.getMaxX());
+        list.add(envelope.getMaxY());
+        return list;
     }
 }

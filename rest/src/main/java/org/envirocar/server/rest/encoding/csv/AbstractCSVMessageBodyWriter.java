@@ -28,13 +28,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 
-import org.apache.commons.io.IOUtils;
 import org.envirocar.server.rest.MediaTypes;
 import org.envirocar.server.rest.encoding.CSVTrackEncoder;
 
+import com.google.common.io.ByteStreams;
+
 /**
  * TODO: Javadoc
- * 
+ *
  * @author Benjamin Pross
  */
 @Produces(MediaTypes.TEXT_CSV)
@@ -46,7 +47,7 @@ public abstract class AbstractCSVMessageBodyWriter<T> implements
     public AbstractCSVMessageBodyWriter(Class<T> classType) {
         this.classType = classType;
     }
-    
+
 	public abstract InputStream encodeCSV(T t, MediaType mt);
 
 	@Override
@@ -66,11 +67,8 @@ public abstract class AbstractCSVMessageBodyWriter<T> implements
 	public void writeTo(T t, Class<?> type, Type genericType, Annotation[] annotations,
 			MediaType mediaType, MultivaluedMap<String, Object> h,
 			OutputStream out) throws IOException, WebApplicationException {
-		
 		InputStream inputStream = encodeCSV(t, mediaType);
-		
-		IOUtils.copy(inputStream, out);
-		
+        ByteStreams.copy(inputStream, out);
 	}
 
 }
