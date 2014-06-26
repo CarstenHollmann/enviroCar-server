@@ -16,27 +16,42 @@
  */
 package org.envirocar.server.mongo.dao;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.bson.types.ObjectId;
 import org.envirocar.server.core.dao.TrackDao;
+import org.envirocar.server.core.entities.Sensors;
 import org.envirocar.server.core.entities.Track;
 import org.envirocar.server.core.entities.Tracks;
+import org.envirocar.server.core.entities.Users;
 import org.envirocar.server.core.filter.MeasurementFilter;
+import org.envirocar.server.core.filter.SensorFilter;
 import org.envirocar.server.core.filter.TrackFilter;
 import org.envirocar.server.core.util.Pagination;
 import org.envirocar.server.mongo.MongoDB;
+import org.envirocar.server.mongo.entity.MongoMeasurement;
+import org.envirocar.server.mongo.entity.MongoSensor;
 import org.envirocar.server.mongo.entity.MongoTrack;
 import org.envirocar.server.mongo.entity.MongoUser;
+import org.envirocar.server.mongo.util.MongoUtils;
 import org.envirocar.server.mongo.util.MorphiaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.jmkgreen.morphia.Key;
+import com.github.jmkgreen.morphia.mapping.Mapper;
 import com.github.jmkgreen.morphia.query.Query;
 import com.github.jmkgreen.morphia.query.UpdateResults;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.mongodb.AggregationOutput;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.DBRef;
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * TODO JavaDoc
@@ -48,6 +63,8 @@ public class MongoTrackDao extends AbstractMongoDao<ObjectId, MongoTrack, Tracks
     private static final Logger log = LoggerFactory
             .getLogger(MongoTrackDao.class);
     private MongoMeasurementDao measurementDao;
+    private MongoSensorDao sensorDAO;
+    
 
     @Inject
     public MongoTrackDao(MongoDB mongoDB) {
@@ -62,6 +79,15 @@ public class MongoTrackDao extends AbstractMongoDao<ObjectId, MongoTrack, Tracks
     public void setMeasurementDao(MongoMeasurementDao measurementDao) {
         this.measurementDao = measurementDao;
     }
+    
+    @Inject
+    public void setSensorDAO(MongoSensorDao sensorDAO) {
+        this.sensorDAO = sensorDAO;
+    }
+    
+    public MongoSensorDao getSensorDAO() {
+        return sensorDAO;
+    }
 
     @Override
     public Track getById(String id) {
@@ -72,6 +98,15 @@ public class MongoTrackDao extends AbstractMongoDao<ObjectId, MongoTrack, Tracks
             return null;
         }
         return get(oid);
+    }
+    
+    @Override
+    public Collection<String> getIdentifier() {
+        Set<String> identifier = Sets.newHashSet();
+        for (Track track : get()) {
+            identifier.add(track.getIdentifier());
+        }
+        return identifier;
     }
 
     @Override
@@ -112,9 +147,49 @@ public class MongoTrackDao extends AbstractMongoDao<ObjectId, MongoTrack, Tracks
                                            q.field(MongoTrack.END),
                                            request.getTemporalFilter());
         }
+        if (request.hasIdentifier()) {
+            q.field(MongoTrack.ID).in(toIdList(request.getIdentifier()));
+        }
+        if (request.hasSensorType()) {
+            q.field(MongoUtils.path(MongoTrack.SENSOR, MongoSensor.TYPE)).equal(request.getSensorType());
+        }
         return fetch(q, request.getPagination());
     }
-
+    
+    public AggregationOutput getMinMaxTimes() {
+    BasicDBObject fields = new BasicDBObject();
+//    MongoUtils.match(o);
+    fields.put(Mapper.ID_KEY, 0);
+    fields.put("phenStart", MongoUtils.min(MongoUtils.valueOf(MongoTrack.BEGIN)));
+    fields.put("phenEnd", MongoUtils.max(MongoUtils.valueOf(MongoTrack.BEGIN)));
+    fields.put("resultStart", MongoUtils.min(MongoUtils.valueOf(MongoTrack.LAST_MODIFIED)));
+    fields.put("resultEnd", MongoUtils.max(MongoUtils.valueOf(MongoTrack.LAST_MODIFIED)));
+    
+    
+    AggregationOutput result = getDatastore()
+            .getCollection(MongoTrack.class)
+            .aggregate(MongoUtils.group(fields));
+    result.getCommandResult().throwOnError();
+    return result;
+  }
+    
+    @Override
+    public Tracks get() {
+        return fetch(q(), null);
+    }
+    
+    @Override
+    public Envelope getBBox(TrackFilter request) {
+        Envelope bbox = new Envelope();
+        for (Track track : get(request)) {
+            if (track.hasBoundingBox()) {
+                bbox.expandToInclude(track.getBoundingBox().getEnvelopeInternal());
+            }
+        }
+        return bbox;
+    }
+    
+    
     @Override
     public void update(Track track) {
         updateTimestamp((MongoTrack) track);
@@ -153,6 +228,14 @@ public class MongoTrackDao extends AbstractMongoDao<ObjectId, MongoTrack, Tracks
         List<Object> ids = Lists.newArrayListWithExpectedSize(keys.size());
         for (Key<T> key : keys) {
             ids.add(key.getId());
+        }
+        return ids;
+    }
+
+    protected List<Object> toIdList(Collection<String> identifiers) {
+        List<Object> ids = Lists.newArrayListWithExpectedSize(identifiers.size());
+        for (String identifier: identifiers) {
+            ids.add(new ObjectId(identifier));
         }
         return ids;
     }

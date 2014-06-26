@@ -16,6 +16,8 @@
  */
 package org.envirocar.server.mongo.dao;
 
+import java.util.Collection;
+
 import org.envirocar.server.core.util.Paginated;
 import org.envirocar.server.core.util.Pagination;
 import org.envirocar.server.mongo.MongoDB;
@@ -29,6 +31,7 @@ import com.github.jmkgreen.morphia.mapping.Mapper;
 import com.github.jmkgreen.morphia.query.Query;
 import com.github.jmkgreen.morphia.query.UpdateOperations;
 import com.github.jmkgreen.morphia.query.UpdateResults;
+import com.mongodb.DBObject;
 import com.mongodb.DBRef;
 import com.mongodb.WriteResult;
 
@@ -60,6 +63,11 @@ public abstract class AbstractMongoDao<K, E, C extends Paginated<? super E>> {
 
     protected E get(K key) {
         return dao.get(key);
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected Collection<String> getDistinctStringField(String field) {
+        return dao.getCollection().distinct(field);
     }
 
     protected long count() {

@@ -16,7 +16,11 @@
  */
 package org.envirocar.server.core.filter;
 
+import java.util.Collection;
+
 import org.envirocar.server.core.TemporalFilter;
+import org.envirocar.server.core.entities.Phenomenon;
+import org.envirocar.server.core.entities.Sensor;
 import org.envirocar.server.core.entities.Track;
 import org.envirocar.server.core.entities.User;
 import org.envirocar.server.core.util.Pagination;
@@ -34,6 +38,9 @@ public class MeasurementFilter {
     private final Geometry geometry;
     private final Pagination pagination;
     private final TemporalFilter temporalFilter;
+    private Collection<Sensor> sensors;
+    private Collection<Phenomenon> phenomenon;
+    private Collection<Track> tracks;
 
     public MeasurementFilter(Track t, User u, Geometry g,
                              TemporalFilter tf, Pagination p) {
@@ -111,4 +118,43 @@ public class MeasurementFilter {
     public boolean hasTemporalFilter() {
         return temporalFilter != null;
     }
+
+    public MeasurementFilter setSensors(Collection<Sensor> sensors) {
+        this.sensors = sensors;
+        return this;
+    }
+    public Collection<Sensor> getSensors() {
+        return sensors;
+    }
+    
+    public boolean hasSensors() {
+        return getSensors() != null && !getSensors().isEmpty();
+    }
+    
+    public MeasurementFilter setPhenomeon(Collection<Phenomenon> phenomenon) {
+        this.phenomenon = phenomenon;
+        return this;
+    }
+
+    public Collection<Phenomenon> getPhenomenon() {
+        return phenomenon;
+    }
+    
+    public boolean hasPhenomeon() {
+        return getPhenomenon() != null && !getPhenomenon().isEmpty();
+    }
+    
+    public MeasurementFilter setTracks(Collection<Track> tracks) {
+        this.tracks = tracks;
+        return this;
+    }
+
+    public Collection<Track> getTracks() {
+        return tracks;
+    }
+    
+    public boolean hasTracks() {
+        return getTracks() != null && !getTracks().isEmpty();
+    }
+    
 }

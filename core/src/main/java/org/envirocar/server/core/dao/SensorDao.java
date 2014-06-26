@@ -16,6 +16,9 @@
  */
 package org.envirocar.server.core.dao;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.envirocar.server.core.entities.Sensor;
 import org.envirocar.server.core.entities.Sensors;
 import org.envirocar.server.core.filter.SensorFilter;
@@ -32,4 +35,6 @@ public interface SensorDao {
     Sensor create(Sensor sensor);
 
     Sensors get(SensorFilter request);
+    
+    Collection<String> getTypes();
 }

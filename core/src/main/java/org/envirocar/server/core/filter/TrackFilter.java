@@ -16,10 +16,15 @@
  */
 package org.envirocar.server.core.filter;
 
+import java.util.Collection;
+
 import org.envirocar.server.core.TemporalFilter;
+import org.envirocar.server.core.entities.Sensor;
 import org.envirocar.server.core.entities.User;
 import org.envirocar.server.core.util.Pagination;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
@@ -32,12 +37,21 @@ public class TrackFilter {
     private final Geometry geometry;
     private final TemporalFilter temporalFilter;
     private final Pagination pagination;
-
-    public TrackFilter(User u, Geometry g, TemporalFilter tf, Pagination p) {
+    private final Collection<Sensor> sensors;
+    private String distinctField;
+    private String sensorType;
+    private Collection<String> identifier;
+    
+    public TrackFilter(User u, Geometry g, TemporalFilter tf, Pagination p, Collection<Sensor> s) {
         this.user = u;
         this.geometry = g;
         this.pagination = p;
         this.temporalFilter = tf;
+        this.sensors = s;
+    }
+    
+    public TrackFilter(User u, Geometry g, TemporalFilter tf, Pagination p) {
+        this(u,g, tf, p, null);
     }
 
     public TrackFilter(User u, Geometry g, Pagination p) {
@@ -90,5 +104,48 @@ public class TrackFilter {
 
     public boolean hasTemporalFilter() {
         return temporalFilter != null;
+    }
+    
+    public Collection<Sensor> getSensors() {
+        return sensors;
+    }
+
+    public boolean hasSensors() {
+        return getSensors() != null && !getSensors().isEmpty();
+    }
+
+    public TrackFilter addDistinction(String distinctField) {
+        this.distinctField = distinctField;
+        return this;
+    }
+    
+    public boolean hasDistinction() {
+        return Strings.isNullOrEmpty(distinctField);
+    }
+
+    public TrackFilter setSensorType(String sensorType) {
+        this.sensorType = sensorType;
+        return this;
+    }
+    
+    public String getSensorType() {
+        return sensorType;
+    }
+    
+    public boolean hasSensorType() {
+        return !Strings.isNullOrEmpty(getSensorType());
+    }
+
+    public TrackFilter setIdentifier(Collection<String> identifier) {
+        this.identifier = identifier;
+        return this;
+    }
+    
+    public Collection<String> getIdentifier() {
+        return identifier;
+    }
+    
+    public boolean hasIdentifier() {
+        return getIdentifier() != null && !getIdentifier().isEmpty();
     }
 }

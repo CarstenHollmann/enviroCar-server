@@ -32,6 +32,7 @@ import com.github.jmkgreen.morphia.logging.MorphiaLoggerFactory;
 import com.github.jmkgreen.morphia.logging.slf4j.SLF4JLogrImplFactory;
 import com.github.jmkgreen.morphia.mapping.DefaultCreator;
 import com.github.jmkgreen.morphia.mapping.Mapper;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -75,6 +76,12 @@ public class MongoDB {
                    @Nullable @Named(USER_PROPERTY) String username,
                    @Nullable @Named(PASS_PROPERTY) char[] password) {
         try {
+            if (Strings.isNullOrEmpty(username)) {
+                username = null;
+            }
+            if (password == null || password.length <=0) {
+                password = null;
+            }
             MorphiaLoggerFactory.registerLogger(SLF4JLogrImplFactory.class);
             mongo = new MongoClient(new ServerAddress(host, port));
             morphia = new Morphia();

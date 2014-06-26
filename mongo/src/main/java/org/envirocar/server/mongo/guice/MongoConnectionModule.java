@@ -36,8 +36,22 @@ import com.google.inject.util.Providers;
  */
 public class MongoConnectionModule extends AbstractModule {
     private static final String PROPERTIES_FILE = "/mongo.properties";
-    private static final Logger log = LoggerFactory
-            .getLogger(MongoConnectionModule.class);
+
+    private static final Logger log = LoggerFactory.getLogger(MongoConnectionModule.class);
+
+    private Properties p;
+
+    public MongoConnectionModule() {
+        this(PROPERTIES_FILE);
+    }
+
+    public MongoConnectionModule(String propertiesFile) {
+        this(getProperties(propertiesFile));
+    }
+
+    public MongoConnectionModule(Properties p) {
+        this.p = p;
+    }
 
     @Override
     protected void configure() {
@@ -46,46 +60,37 @@ public class MongoConnectionModule extends AbstractModule {
         int port = 27017;
         String user = null;
         char[] pass = null;
-        try {
-            Properties p = getProperties();
-            if (p.containsKey(MongoDB.DATABASE_PROPERTY)) {
-                database = p.getProperty(MongoDB.DATABASE_PROPERTY).trim();
-            }
-            if (p.containsKey(MongoDB.HOST_PROPERTY)) {
-                host = p.getProperty(MongoDB.HOST_PROPERTY).trim();
-            }
-            if (p.containsKey(MongoDB.PORT_PROPERTY)) {
-                port = Integer.valueOf(p.getProperty(MongoDB.PORT_PROPERTY)
-                        .trim());
-            }
-            if (p.containsKey(MongoDB.USER_PROPERTY)) {
-                user = p.getProperty(MongoDB.USER_PROPERTY).trim();
-            }
-            if (p.containsKey(MongoDB.PASS_PROPERTY)) {
-                pass = p.getProperty(MongoDB.PASS_PROPERTY).trim().toCharArray();
-            }
-        } catch (IOException ex) {
-            log
-                    .error("Error reading mongo.properties. Using default values", ex);
+        if (p.containsKey(MongoDB.DATABASE_PROPERTY)) {
+            database = p.getProperty(MongoDB.DATABASE_PROPERTY).trim();
         }
-        bind(String.class).annotatedWith(Names.named(MongoDB.DATABASE_PROPERTY))
-                .toInstance(database);
-        bind(String.class).annotatedWith(Names.named(MongoDB.HOST_PROPERTY))
-                .toInstance(host);
-        bind(Integer.class).annotatedWith(Names.named(MongoDB.PORT_PROPERTY))
-                .toInstance(port);
-        bind(String.class).annotatedWith(Names.named(MongoDB.USER_PROPERTY))
-                .toProvider(Providers.of(user));
-        bind(char[].class).annotatedWith(Names.named(MongoDB.PASS_PROPERTY))
-                .toProvider(Providers.of(pass));
+        if (p.containsKey(MongoDB.HOST_PROPERTY)) {
+            host = p.getProperty(MongoDB.HOST_PROPERTY).trim();
+        }
+        if (p.containsKey(MongoDB.PORT_PROPERTY)) {
+            port = Integer.valueOf(p.getProperty(MongoDB.PORT_PROPERTY).trim());
+        }
+        if (p.containsKey(MongoDB.USER_PROPERTY)) {
+            user = p.getProperty(MongoDB.USER_PROPERTY).trim();
+        }
+        if (p.containsKey(MongoDB.PASS_PROPERTY)) {
+            pass = p.getProperty(MongoDB.PASS_PROPERTY).trim().toCharArray();
+        }
+
+        bind(String.class).annotatedWith(Names.named(MongoDB.DATABASE_PROPERTY)).toInstance(database);
+        bind(String.class).annotatedWith(Names.named(MongoDB.HOST_PROPERTY)).toInstance(host);
+        bind(Integer.class).annotatedWith(Names.named(MongoDB.PORT_PROPERTY)).toInstance(port);
+        bind(String.class).annotatedWith(Names.named(MongoDB.USER_PROPERTY)).toProvider(Providers.of(user));
+        bind(char[].class).annotatedWith(Names.named(MongoDB.PASS_PROPERTY)).toProvider(Providers.of(pass));
     }
 
-    private Properties getProperties() throws IOException {
-        InputStream is = MongoDB.class.getResourceAsStream(PROPERTIES_FILE);
+    private static Properties getProperties(String propertiesFile) {
+        InputStream is = MongoDB.class.getResourceAsStream(propertiesFile);
         Properties p = new Properties();
         if (is != null) {
             try {
                 p.load(is);
+            } catch (IOException ex) {
+                log.error(String.format("Error reading %s. Using default values", propertiesFile), ex);
             } finally {
                 Closeables.closeQuietly(is);
             }

@@ -16,13 +16,15 @@
  */
 package org.envirocar.server.mongo.dao;
 
+import java.util.Collection;
+
 import org.envirocar.server.core.dao.PhenomenonDao;
 import org.envirocar.server.core.entities.Phenomenon;
 import org.envirocar.server.core.entities.Phenomenons;
+import org.envirocar.server.core.filter.PhenomenonFilter;
 import org.envirocar.server.core.util.Pagination;
 import org.envirocar.server.mongo.MongoDB;
 import org.envirocar.server.mongo.entity.MongoPhenomenon;
-import org.envirocar.server.mongo.entity.MongoSensor;
 
 import com.google.inject.Inject;
 
@@ -41,14 +43,27 @@ public class MongoPhenomenonDao extends AbstractMongoDao<String, MongoPhenomenon
 
     @Override
     public MongoPhenomenon getByName(final String name) {
-        return q().field(MongoSensor.NAME).equal(name).get();
+        return q().field(MongoPhenomenon.NAME).equal(name).get();
     }
 
     @Override
     public Phenomenons get(Pagination p) {
         return fetch(q(), p);
     }
-
+    
+    @Override
+    public Phenomenons get(PhenomenonFilter request) {
+        if (request.hasSensors()){
+            
+        }
+        return null;
+    }
+    
+    @Override
+    public Collection<String> getIdentifier() {
+        return getDistinctStringField(MongoPhenomenon.NAME);
+    }
+    
     @Override
     public MongoPhenomenon create(Phenomenon phen) {
         MongoPhenomenon ph = (MongoPhenomenon) phen;

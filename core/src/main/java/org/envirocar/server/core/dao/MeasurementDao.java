@@ -16,9 +16,14 @@
  */
 package org.envirocar.server.core.dao;
 
+import java.util.List;
+
 import org.envirocar.server.core.entities.Measurement;
 import org.envirocar.server.core.entities.Measurements;
+import org.envirocar.server.core.entities.Track;
 import org.envirocar.server.core.filter.MeasurementFilter;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * TODO JavaDoc
@@ -35,4 +40,6 @@ public interface MeasurementDao {
     Measurement getById(String id);
 
     Measurements get(MeasurementFilter request);
+
+    List<Geometry> getGeometries(Track track);
 }

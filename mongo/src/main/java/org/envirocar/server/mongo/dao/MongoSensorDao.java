@@ -17,17 +17,19 @@
 package org.envirocar.server.mongo.dao;
 
 import java.text.DecimalFormatSymbols;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
 
+import com.github.jmkgreen.morphia.Key;
 import com.github.jmkgreen.morphia.query.Query;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 
 import org.envirocar.server.core.dao.SensorDao;
-
 import org.envirocar.server.core.entities.Sensor;
 import org.envirocar.server.core.entities.Sensors;
 import org.envirocar.server.core.filter.PropertyFilter;
@@ -35,7 +37,6 @@ import org.envirocar.server.core.filter.SensorFilter;
 import org.envirocar.server.core.util.Pagination;
 import org.envirocar.server.mongo.MongoDB;
 import org.envirocar.server.mongo.entity.MongoSensor;
-
 import org.envirocar.server.mongo.util.MongoUtils;
 
 /**
@@ -59,6 +60,11 @@ public class MongoSensorDao extends AbstractMongoDao<ObjectId, MongoSensor, Sens
             return null;
         }
         return get(oid);
+    }
+    
+    @Override
+    public Collection<String> getTypes() {
+        return getDistinctStringField(MongoSensor.TYPE);
     }
 
     @Override
@@ -146,5 +152,13 @@ public class MongoSensorDao extends AbstractMongoDao<ObjectId, MongoSensor, Sens
             }
         }
         return true;
+    }
+
+    public List<Key<MongoSensor>> getKeys(SensorFilter request) {
+        Query<MongoSensor> q = q();
+        if (request.hasType()) {
+            q.field(MongoSensor.TYPE).equal(request.getType());
+        }
+        return q.asKeyList();
     }
 }

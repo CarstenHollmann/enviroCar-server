@@ -34,6 +34,9 @@ import org.envirocar.server.core.util.GeometryConverter;
 import org.envirocar.server.core.util.Pagination;
 import org.envirocar.server.mongo.MongoDB;
 import org.envirocar.server.mongo.entity.MongoMeasurement;
+import org.envirocar.server.mongo.entity.MongoPhenomenon;
+import org.envirocar.server.mongo.entity.MongoSensor;
+import org.envirocar.server.mongo.entity.MongoStatistic;
 import org.envirocar.server.mongo.entity.MongoTrack;
 import org.envirocar.server.mongo.entity.MongoUser;
 import org.envirocar.server.mongo.util.MongoUtils;
@@ -157,6 +160,12 @@ public class MongoMeasurementDao extends AbstractMongoDao<ObjectId, MongoMeasure
             MorphiaUtils.temporalFilter(q.field(MongoMeasurement.TIME),
                                            request.getTemporalFilter());
         }
+        if (request.hasSensors()) {
+            q.field(MongoMeasurement.SENSOR).in(request.getSensors());
+        }
+        if (request.hasPhenomeon()) {
+            q.field(MongoMeasurement.PHENOMENONS).in(request.getPhenomenon());
+        }
         return fetch(q, request.getPagination());
     }
 
@@ -176,6 +185,12 @@ public class MongoMeasurementDao extends AbstractMongoDao<ObjectId, MongoMeasure
             q.add(MongoMeasurement.TIME,
                   MongoUtils.temporalFilter(request.getTemporalFilter()));
         }
+        if (request.hasSensors()) {
+//            q.add(MongoMeasurement.SENSOR, deref(Sensor.class, request.getSensors()));
+        }
+        if (request.hasPhenomeon()) {
+//            q.add(MongoMeasurement.PHENOMENONS, ref(request.getPhenomenon()));
+        }
         return query(q.get(), request.getPagination());
     }
 
@@ -189,7 +204,7 @@ public class MongoMeasurementDao extends AbstractMongoDao<ObjectId, MongoMeasure
         }
         return get(oid);
     }
-
+    
     void removeUser(MongoUser user) {
         UpdateResults<MongoMeasurement> result = update(
                 q().field(MongoMeasurement.USER).equal(key(user)),
@@ -346,5 +361,11 @@ public class MongoMeasurementDao extends AbstractMongoDao<ObjectId, MongoMeasure
                 cursor, mapper, MongoMeasurement.class, coll.getName(),
                 mapper.createEntityCache());
         return createPaginatedIterable(i, p, count);
+    }
+
+    @Override
+    public List<Geometry> getGeometries(Track track) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
