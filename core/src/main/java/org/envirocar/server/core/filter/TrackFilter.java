@@ -37,7 +37,7 @@ public class TrackFilter {
     private final Geometry geometry;
     private final TemporalFilter temporalFilter;
     private final Pagination pagination;
-    private final Collection<Sensor> sensors;
+    private Collection<Sensor> sensors;
     private String distinctField;
     private String sensorType;
     private Collection<String> identifier;
@@ -51,7 +51,7 @@ public class TrackFilter {
     }
     
     public TrackFilter(User u, Geometry g, TemporalFilter tf, Pagination p) {
-        this(u,g, tf, p, null);
+        this(u, g, tf, p, null);
     }
 
     public TrackFilter(User u, Geometry g, Pagination p) {
@@ -147,5 +147,13 @@ public class TrackFilter {
     
     public boolean hasIdentifier() {
         return getIdentifier() != null && !getIdentifier().isEmpty();
+    }
+
+    public TrackFilter addSensor(Sensor sensor) {
+        if (getSensors() == null) {
+            sensors = Sets.newHashSet();
+        }
+        sensors.add(sensor);
+        return this;
     }
 }

@@ -35,7 +35,5 @@ public interface PhenomenonDao {
 
     Phenomenon create(Phenomenon phenomenon);
 
-    Phenomenons get(PhenomenonFilter pf);
-
     Collection<String> getIdentifier();
 }

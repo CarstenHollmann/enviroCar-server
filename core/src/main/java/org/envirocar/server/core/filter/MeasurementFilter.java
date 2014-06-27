@@ -38,9 +38,13 @@ public class MeasurementFilter {
     private final Geometry geometry;
     private final Pagination pagination;
     private final TemporalFilter temporalFilter;
-    private Collection<Sensor> sensors;
-    private Collection<Phenomenon> phenomenon;
-    private Collection<Track> tracks;
+    private Iterable<Sensor> sensors;
+    private Iterable<Phenomenon> phenomenon;
+    private Iterable<Track> tracks;
+    
+    public MeasurementFilter() {
+        this(null);
+    }
 
     public MeasurementFilter(Track t, User u, Geometry g,
                              TemporalFilter tf, Pagination p) {
@@ -119,29 +123,29 @@ public class MeasurementFilter {
         return temporalFilter != null;
     }
 
-    public MeasurementFilter setSensors(Collection<Sensor> sensors) {
+    public MeasurementFilter setSensors(Iterable<Sensor> sensors) {
         this.sensors = sensors;
         return this;
     }
-    public Collection<Sensor> getSensors() {
+    public Iterable<Sensor> getSensors() {
         return sensors;
     }
     
     public boolean hasSensors() {
-        return getSensors() != null && !getSensors().isEmpty();
+        return getSensors() != null;
     }
     
-    public MeasurementFilter setPhenomeon(Collection<Phenomenon> phenomenon) {
+    public MeasurementFilter setPhenomeon(Iterable<Phenomenon> phenomenon) {
         this.phenomenon = phenomenon;
         return this;
     }
 
-    public Collection<Phenomenon> getPhenomenon() {
+    public Iterable<Phenomenon> getPhenomenon() {
         return phenomenon;
     }
     
     public boolean hasPhenomeon() {
-        return getPhenomenon() != null && !getPhenomenon().isEmpty();
+        return getPhenomenon() != null;
     }
     
     public MeasurementFilter setTracks(Collection<Track> tracks) {
@@ -149,12 +153,11 @@ public class MeasurementFilter {
         return this;
     }
 
-    public Collection<Track> getTracks() {
+    public Iterable<Track> getTracks() {
         return tracks;
     }
     
     public boolean hasTracks() {
-        return getTracks() != null && !getTracks().isEmpty();
+        return getTracks() != null;
     }
-    
 }

@@ -17,12 +17,15 @@
 package org.envirocar.server.mongo.convert;
 
 import org.bson.BSONObject;
+import org.envirocar.server.core.exception.GeometryConverterException;
+import org.envirocar.server.core.util.GeometryConverter;
 
 import com.github.jmkgreen.morphia.converters.SimpleValueConverter;
 import com.github.jmkgreen.morphia.converters.TypeConverter;
 import com.github.jmkgreen.morphia.mapping.MappedField;
 import com.github.jmkgreen.morphia.mapping.MappingException;
 import com.google.inject.Inject;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.LineString;
@@ -32,56 +35,62 @@ import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
-import org.envirocar.server.core.exception.GeometryConverterException;
-
-import org.envirocar.server.core.util.GeometryConverter;
-
-/**
- * TODO JavaDoc
- *
- * @author Christian Autermann <autermann@uni-muenster.de>
- */
-public class JTSConverter extends TypeConverter implements SimpleValueConverter {
+public class JTSConverter extends TypeConverter implements
+        SimpleValueConverter {
     private final GeometryConverter<BSONObject> geoJSON;
 
     @Inject
     public JTSConverter(GeometryConverter<BSONObject> geoJSON) {
-        super(Geometry.class, GeometryCollection.class,
-              Point.class, MultiPoint.class,
-              LineString.class, MultiLineString.class,
-              Polygon.class, MultiPolygon.class);
+        super(Geometry.class,
+              GeometryCollection.class,
+              Point.class,
+              MultiPoint.class,
+              LineString.class,
+              MultiLineString.class,
+              Polygon.class,
+              MultiPolygon.class,
+              Envelope.class);
         this.geoJSON = geoJSON;
     }
 
     @Override
     public BSONObject encode(Object value, MappedField optionalExtraInfo) {
-        if (value == null) {
-            return null;
-        } else if (value instanceof Geometry) {
-            try {
+        try {
+            if (value == null) {
+                return null;
+            } else if (value instanceof Geometry) {
                 return geoJSON.encode((Geometry) value);
-            } catch (GeometryConverterException ex) {
-                throw new MappingException("Can not encode geometry", ex);
+            } else if (value instanceof Envelope) {
+                return geoJSON.encode((Envelope) value);
+            } else {
+                throw new MappingException("value is not a Geometry");
             }
-        } else {
-            throw new MappingException("value is not a Geometry");
+        } catch (GeometryConverterException ex) {
+            throw new MappingException("Can not encode geometry", ex);
         }
     }
 
     @Override
     @SuppressWarnings("rawtypes")
-    public Geometry decode(Class targetClass, Object db,
-                           MappedField optionalExtraInfo) {
+    public Object decode(Class targetClass, Object db,
+                         MappedField optionalExtraInfo) {
         if (db == null) {
             return null;
         } else if (db instanceof BSONObject) {
             try {
-                return geoJSON.decode((BSONObject) db);
+                if (Geometry.class.isAssignableFrom(targetClass)) {
+                    return geoJSON.decodeGeometry((BSONObject) db);
+                } else if (Envelope.class.isAssignableFrom(targetClass)) {
+                    return geoJSON.decodeEnvelope((BSONObject) db);
+                } else {
+                    throw new MappingException("Can not decode " + targetClass);
+                }
             } catch (GeometryConverterException ex) {
-                throw new MappingException("Can not decode geometry", ex);
+                throw new MappingException("Can not decode " + targetClass, ex);
             }
         } else {
             throw new MappingException("value is not a BSONObject");
         }
     }
+
 }

@@ -39,6 +39,11 @@ public class MongoSensor extends MongoEntityBase implements Sensor {
     public static final String NAME = Mapper.ID_KEY;
     public static final String TYPE = "type";
     public static final String PROPERTIES = "properties";
+    public static final String PROPERTY_MODEL = "model";
+    public static final String PROPERTY_FUEL_TYPE = "fuelTYpe";
+    public static final String PROPERTY_MANUFACTURER = "manufacturer";
+    public static final String PROPERTY_CONSTRUCTION_YEAR = "constructionYear";
+    
     @Id
     private ObjectId id = new ObjectId();
     @Property(TYPE)

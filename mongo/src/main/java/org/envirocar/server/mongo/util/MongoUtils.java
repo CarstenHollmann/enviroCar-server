@@ -16,13 +16,6 @@
  */
 package org.envirocar.server.mongo.util;
 
-import static org.envirocar.server.core.TemporalFilterOperator.after;
-import static org.envirocar.server.core.TemporalFilterOperator.before;
-import static org.envirocar.server.core.TemporalFilterOperator.begins;
-import static org.envirocar.server.core.TemporalFilterOperator.during;
-import static org.envirocar.server.core.TemporalFilterOperator.ends;
-import static org.envirocar.server.core.TemporalFilterOperator.equals;
-
 import java.util.List;
 
 import org.bson.BSONObject;
@@ -79,6 +72,10 @@ public class MongoUtils {
 
     public static DBObject addToSet(String path) {
         return new BasicDBObject(Ops.ADD_TO_SET, path);
+    }
+    
+    public static DBObject addToSet(String first, String second, String... paths) {
+        return new BasicDBObject(Ops.ADD_TO_SET, valueOf(first, second, paths));
     }
 
     public static DBObject unwind(String path) {

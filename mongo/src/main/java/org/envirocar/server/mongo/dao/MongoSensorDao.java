@@ -18,16 +18,23 @@ package org.envirocar.server.mongo.dao;
 
 import java.text.DecimalFormatSymbols;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
 
 import com.github.jmkgreen.morphia.Key;
+import com.github.jmkgreen.morphia.mapping.Mapper;
 import com.github.jmkgreen.morphia.query.Query;
 import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.mongodb.BasicDBList;
+import com.mongodb.DBObject;
 
 import org.envirocar.server.core.dao.SensorDao;
 import org.envirocar.server.core.entities.Sensor;
@@ -36,6 +43,7 @@ import org.envirocar.server.core.filter.PropertyFilter;
 import org.envirocar.server.core.filter.SensorFilter;
 import org.envirocar.server.core.util.Pagination;
 import org.envirocar.server.mongo.MongoDB;
+import org.envirocar.server.mongo.entity.MongoMeasurement;
 import org.envirocar.server.mongo.entity.MongoSensor;
 import org.envirocar.server.mongo.util.MongoUtils;
 
@@ -46,9 +54,21 @@ import org.envirocar.server.mongo.util.MongoUtils;
  */
 public class MongoSensorDao extends AbstractMongoDao<ObjectId, MongoSensor, Sensors>
         implements SensorDao {
+    
+    private MongoMeasurementDao measurementDao;
+    
     @Inject
     public MongoSensorDao(MongoDB mongoDB) {
         super(MongoSensor.class, mongoDB);
+    }
+    
+    public MongoMeasurementDao getMeasurementDao() {
+        return measurementDao;
+    }
+
+    @Inject
+    public void setMeasurementDao(MongoMeasurementDao measurementDao) {
+        this.measurementDao = measurementDao;
     }
 
     @Override
@@ -77,6 +97,11 @@ public class MongoSensorDao extends AbstractMongoDao<ObjectId, MongoSensor, Sens
             applyFilters(q, request.getFilters());
         }
         return fetch(q, request.getPagination());
+    }
+
+    @Override
+    public Sensors get(Pagination p) {
+        return fetch(q(), p);
     }
 
     @Override
@@ -161,4 +186,22 @@ public class MongoSensorDao extends AbstractMongoDao<ObjectId, MongoSensor, Sens
         }
         return q.asKeyList();
     }
+
+
+    public Map<String, Collection<String>> getPhenomenonSensorsMap() {
+        Map<String, Collection<String>> sensorMap = Maps.newHashMap();
+        for (DBObject dbo : measurementDao.getDistinctSensors()) {
+            sensorMap.put(dbo.get(Mapper.ID_KEY).toString(), toList((BasicDBList)dbo.get(MongoMeasurement.SENSORS)));
+        }
+        return sensorMap;
+    }
+
+    private Collection<String> toList(BasicDBList basicDBList) {
+        HashSet<String> set = Sets.newHashSet();
+        for (Object object : basicDBList) {
+            set.add(object.toString());
+        }
+        return set;
+    }
+
 }

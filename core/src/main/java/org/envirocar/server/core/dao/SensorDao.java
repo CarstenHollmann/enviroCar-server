@@ -17,11 +17,11 @@
 package org.envirocar.server.core.dao;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.envirocar.server.core.entities.Sensor;
 import org.envirocar.server.core.entities.Sensors;
 import org.envirocar.server.core.filter.SensorFilter;
+import org.envirocar.server.core.util.Pagination;
 
 /**
  * TODO JavaDoc
@@ -37,4 +37,6 @@ public interface SensorDao {
     Sensors get(SensorFilter request);
     
     Collection<String> getTypes();
+
+    Sensors get(Pagination p);
 }

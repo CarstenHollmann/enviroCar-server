@@ -18,6 +18,8 @@ package org.envirocar.server.mongo.dao;
 
 import java.util.Collection;
 
+import org.envirocar.server.core.entities.Phenomenons;
+import org.envirocar.server.core.filter.PhenomenonFilter;
 import org.envirocar.server.core.util.Paginated;
 import org.envirocar.server.core.util.Pagination;
 import org.envirocar.server.mongo.MongoDB;
@@ -29,9 +31,11 @@ import com.github.jmkgreen.morphia.Key;
 import com.github.jmkgreen.morphia.dao.BasicDAO;
 import com.github.jmkgreen.morphia.mapping.Mapper;
 import com.github.jmkgreen.morphia.query.Query;
+import com.github.jmkgreen.morphia.query.QueryImpl;
 import com.github.jmkgreen.morphia.query.UpdateOperations;
 import com.github.jmkgreen.morphia.query.UpdateResults;
 import com.mongodb.DBObject;
+import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBRef;
 import com.mongodb.WriteResult;
 
@@ -68,6 +72,11 @@ public abstract class AbstractMongoDao<K, E, C extends Paginated<? super E>> {
     @SuppressWarnings("unchecked")
     protected Collection<String> getDistinctStringField(String field) {
         return dao.getCollection().distinct(field);
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected Collection<Object> getDistinctField(String field, DBObject query) {
+        return dao.getCollection().distinct(field, query);
     }
 
     protected long count() {
@@ -142,5 +151,17 @@ public abstract class AbstractMongoDao<K, E, C extends Paginated<? super E>> {
 
     public Mapper getMapper() {
         return mongoDB.getMapper();
+    }
+
+    public MongoDB getMongoDB() {
+        return this.mongoDB;
+    }
+    
+    public DBObject getDBObject(Query<E> q) {
+        return ((QueryImpl<E>)q).getQueryObject();
+    }
+
+    protected static BasicDBObjectBuilder bson() {
+        return new BasicDBObjectBuilder();
     }
 }

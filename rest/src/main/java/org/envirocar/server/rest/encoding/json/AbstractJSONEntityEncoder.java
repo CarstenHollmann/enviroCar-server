@@ -29,6 +29,8 @@ import org.envirocar.server.rest.encoding.JSONEntityEncoder;
 
 import org.envirocar.server.rest.rights.AccessRights;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 /**
  * TODO JavaDoc
  *
@@ -69,7 +71,7 @@ public abstract class AbstractJSONEntityEncoder<T>
     }
 
     @Override
-    public ObjectNode encodeJSON(T t, MediaType mt) {
+    public JsonNode encodeJSON(T t, MediaType mt) {
         return encodeJSON(t, rights.get(), mt);
     }
 }

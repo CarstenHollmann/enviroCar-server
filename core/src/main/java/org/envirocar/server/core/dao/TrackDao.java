@@ -49,4 +49,6 @@ public interface TrackDao {
 
     Envelope getBBox(TrackFilter request);
 
+
+    void calculateBoundingBox(Track track);
 }

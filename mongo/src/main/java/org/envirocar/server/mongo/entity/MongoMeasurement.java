@@ -56,6 +56,8 @@ public class MongoMeasurement extends MongoEntityBase implements Measurement {
     public static final String TRACK = "track";
     public static final String GEOMETRY = "geometry";
     public static final String TIME = "time";
+    public static final String PHEN = "phen";
+    public static final String SENSORS = "sensors";
     @Id
     private ObjectId id = new ObjectId();
     @Property(GEOMETRY)
