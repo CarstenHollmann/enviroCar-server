@@ -16,10 +16,15 @@
  */
 package org.envirocar.server.mongo.dao;
 
+import static org.envirocar.server.mongo.dao.AbstractMongoDao.bson;
+import static org.envirocar.server.mongo.dao.MongoMeasurementDao.ID;
+
+import java.util.Iterator;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.bson.types.BasicBSONList;
 import org.bson.types.ObjectId;
 import org.envirocar.server.core.dao.TrackDao;
 import org.envirocar.server.core.entities.Sensors;
@@ -29,14 +34,17 @@ import org.envirocar.server.core.entities.Users;
 import org.envirocar.server.core.filter.MeasurementFilter;
 import org.envirocar.server.core.filter.SensorFilter;
 import org.envirocar.server.core.filter.TrackFilter;
+import org.envirocar.server.core.util.GeoJSONConstants;
 import org.envirocar.server.core.util.Pagination;
 import org.envirocar.server.mongo.MongoDB;
 import org.envirocar.server.mongo.entity.MongoMeasurement;
 import org.envirocar.server.mongo.entity.MongoSensor;
+import org.envirocar.server.mongo.entity.MongoMeasurement;
 import org.envirocar.server.mongo.entity.MongoTrack;
 import org.envirocar.server.mongo.entity.MongoUser;
 import org.envirocar.server.mongo.util.MongoUtils;
 import org.envirocar.server.mongo.util.MorphiaUtils;
+import org.envirocar.server.mongo.util.Ops;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +59,10 @@ import com.mongodb.AggregationOutput;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.DBRef;
+import com.vividsolutions.jts.geom.Envelope;
+import com.mongodb.AggregationOutput;
+import com.mongodb.BasicDBList;
+import com.mongodb.DBObject;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
@@ -230,6 +242,37 @@ public class MongoTrackDao extends AbstractMongoDao<ObjectId, MongoTrack, Tracks
             ids.add(key.getId());
         }
         return ids;
+    }
+
+    @Override
+    public void calculateBoundingBox(Track track) {
+
+        String coordPath = MongoUtils.valueOf(MongoMeasurement.GEOMETRY,
+                                              GeoJSONConstants.COORDINATES_KEY);
+
+        AggregationOutput result = getMongoDB().getDatastore()
+                .getCollection(MongoMeasurement.class)
+                .aggregate(bson().push(Ops.MATCH).add(MongoMeasurement.TRACK,
+                                                      ref(track)).get(),
+                           bson().push(Ops.GROUP).add(ID, 0)
+                                    .push("min").add(Ops.MIN, coordPath).pop()
+                                    .push("max").add(Ops.MAX, coordPath).pop().get());
+        result.getCommandResult().throwOnError();
+
+        Iterator<DBObject> it = result.results().iterator();
+        if (!it.hasNext()) {
+            track.setBoundingBox(null);
+        } else {
+            DBObject r = it.next();
+            BasicDBList min = (BasicDBList) r.get("min");
+            BasicDBList max = (BasicDBList) r.get("max");
+            double minX = ((Number) min.get(0)).doubleValue();
+            double minY = ((Number) min.get(1)).doubleValue();
+            double maxX = ((Number) max.get(0)).doubleValue();
+            double maxY = ((Number) max.get(1)).doubleValue();
+            track.setBoundingBox(new Envelope(minX, maxX, minY, maxY));
+        }
+        save(track);
     }
 
     protected List<Object> toIdList(Collection<String> identifiers) {

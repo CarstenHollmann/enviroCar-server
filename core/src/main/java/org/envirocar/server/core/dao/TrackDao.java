@@ -43,6 +43,8 @@ public interface TrackDao {
 
     Tracks get(TrackFilter request);
 
+    void calculateBoundingBox(Track track);
+
     Tracks get();
 
     Collection<String> getIdentifier();

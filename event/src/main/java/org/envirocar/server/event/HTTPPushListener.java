@@ -35,6 +35,7 @@ import org.envirocar.server.rest.rights.AccessRightsImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.eventbus.Subscribe;
@@ -70,7 +71,7 @@ public class HTTPPushListener {
     private synchronized void pushNewTrack(Track track) {
         HttpResponse resp = null;
         try {
-            ObjectNode jsonTrack = encoder
+            JsonNode jsonTrack = encoder
                     .encodeJSON(track, DEFAULT_ACCESS_RIGHTS,
                                 MediaTypes.TRACK_TYPE);
             String content = writer.writeValueAsString(jsonTrack);

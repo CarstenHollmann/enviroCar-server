@@ -18,6 +18,7 @@ package org.envirocar.server.core.entities;
 
 import org.joda.time.DateTime;
 
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
@@ -44,9 +45,9 @@ public interface Track extends BaseEntity {
 
     boolean hasIdentifier();
 
-    Geometry getBoundingBox();
+    Envelope getBoundingBox();
 
-    void setBoundingBox(Geometry boundingBox);
+    void setBoundingBox(Envelope boundingBox);
 
     boolean hasBoundingBox();
 

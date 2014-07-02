@@ -47,6 +47,7 @@ import org.envirocar.server.rest.encoding.json.AnnouncementJSONEncoder;
 import org.envirocar.server.rest.encoding.json.AnnouncementsJSONEncoder;
 import org.envirocar.server.rest.encoding.json.BadgeJSONEncoder;
 import org.envirocar.server.rest.encoding.json.BadgesJSONEncoder;
+import org.envirocar.server.rest.encoding.json.EnvelopeJSONEncoder;
 import org.envirocar.server.rest.encoding.json.FuelingJSONEncoder;
 import org.envirocar.server.rest.encoding.json.FuelingsJSONEncoder;
 import org.envirocar.server.rest.encoding.json.GeometryJSONEncoder;
@@ -71,6 +72,7 @@ import org.envirocar.server.rest.encoding.json.UsersJSONEncoder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 import com.google.inject.TypeLiteral;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
@@ -133,21 +135,24 @@ public class JerseyJSONEncoderModule extends AbstractModule {
         bind(GeometryJSONEncoder.class).in(Scopes.SINGLETON);
         bind(new TypeLiteral<JSONEntityEncoder<Geometry>>() {
         }).to(GeometryJSONEncoder.class);
-        
+        bind(EnvelopeJSONEncoder.class).in(Scopes.SINGLETON);
+        bind(new TypeLiteral<JSONEntityEncoder<Envelope>>() {
+        }).to(EnvelopeJSONEncoder.class);
+
         bind(TermsOfUseInstanceJSONEncoder.class).in(Scopes.SINGLETON);
         bind(new TypeLiteral<JSONEntityEncoder<TermsOfUseInstance>>() {
         }).to(TermsOfUseInstanceJSONEncoder.class);
         bind(TermsOfUseJSONEncoder.class).in(Scopes.SINGLETON);
         bind(new TypeLiteral<JSONEntityEncoder<TermsOfUse>>() {
         }).to(TermsOfUseJSONEncoder.class);
-        
+
         bind(AnnouncementJSONEncoder.class).in(Scopes.SINGLETON);
         bind(new TypeLiteral<JSONEntityEncoder<Announcement>>() {
         }).to(AnnouncementJSONEncoder.class);
         bind(AnnouncementsJSONEncoder.class).in(Scopes.SINGLETON);
         bind(new TypeLiteral<JSONEntityEncoder<Announcements>>() {
         }).to(AnnouncementsJSONEncoder.class);
-        
+
         bind(BadgeJSONEncoder.class).in(Scopes.SINGLETON);
         bind(new TypeLiteral<JSONEntityEncoder<Badge>>() {
         }).to(BadgeJSONEncoder.class);

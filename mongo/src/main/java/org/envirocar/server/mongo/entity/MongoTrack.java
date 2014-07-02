@@ -32,7 +32,7 @@ import com.github.jmkgreen.morphia.annotations.Property;
 import com.github.jmkgreen.morphia.annotations.Transient;
 import com.github.jmkgreen.morphia.mapping.Mapper;
 import com.google.common.base.Objects;
-import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * TODO JavaDoc
@@ -65,7 +65,7 @@ public class MongoTrack extends MongoEntityBase implements Track {
     @Property(DESCRIPTION)
     private String description;
     @Property(BBOX)
-    private Geometry bbox;
+    private Envelope bbox;
     @Property(BEGIN)
     private DateTime begin;
     @Property(END)
@@ -157,18 +157,18 @@ public class MongoTrack extends MongoEntityBase implements Track {
     }
 
     @Override
-    public Geometry getBoundingBox() {
+    public Envelope getBoundingBox() {
         return this.bbox;
     }
 
     @Override
-    public void setBoundingBox(Geometry bbox) {
+    public void setBoundingBox(Envelope bbox) {
         this.bbox = bbox;
     }
 
     @Override
     public boolean hasBoundingBox() {
-        return getBoundingBox() != null && !getBoundingBox().isEmpty();
+        return getBoundingBox() != null && !getBoundingBox().isNull();
     }
 
     public ObjectId getId() {
@@ -284,5 +284,5 @@ public class MongoTrack extends MongoEntityBase implements Track {
 	public boolean hasTouVersion() {
 		return touVersion != null && !touVersion.isEmpty();
 	}
-    
+
 }

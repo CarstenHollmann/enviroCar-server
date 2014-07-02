@@ -32,6 +32,7 @@ import com.github.jmkgreen.morphia.query.Query;
 import com.github.jmkgreen.morphia.query.UpdateOperations;
 import com.github.jmkgreen.morphia.query.UpdateResults;
 import com.mongodb.DBObject;
+import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBRef;
 import com.mongodb.WriteResult;
 
@@ -142,5 +143,13 @@ public abstract class AbstractMongoDao<K, E, C extends Paginated<? super E>> {
 
     public Mapper getMapper() {
         return mongoDB.getMapper();
+    }
+
+    public MongoDB getMongoDB() {
+        return this.mongoDB;
+    }
+
+    protected static BasicDBObjectBuilder bson() {
+        return new BasicDBObjectBuilder();
     }
 }

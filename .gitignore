@@ -1,10 +1,7 @@
-**/.classpath
-**/.settings
-**/.project
-**/target
-**/nb-*.xml
-**/webapp/META-INF/context.xml
-/target/
-.project
+.classpath
 .settings
+.project
+target
+nb*.xml
+**/webapp/META-INF/context.xml
 
