@@ -17,13 +17,17 @@
 package org.envirocar.server.mongo.dao;
 
 import java.util.Collection;
+import java.util.List;
 
+import org.bson.types.ObjectId;
 import org.envirocar.server.core.entities.Phenomenons;
 import org.envirocar.server.core.filter.PhenomenonFilter;
 import org.envirocar.server.core.util.Paginated;
 import org.envirocar.server.core.util.Pagination;
 import org.envirocar.server.mongo.MongoDB;
 import org.envirocar.server.mongo.entity.MongoEntityBase;
+import org.envirocar.server.mongo.util.Ops;
+import org.ietf.jgss.Oid;
 import org.joda.time.DateTime;
 
 import com.github.jmkgreen.morphia.Datastore;
@@ -34,6 +38,8 @@ import com.github.jmkgreen.morphia.query.Query;
 import com.github.jmkgreen.morphia.query.QueryImpl;
 import com.github.jmkgreen.morphia.query.UpdateOperations;
 import com.github.jmkgreen.morphia.query.UpdateResults;
+import com.google.common.collect.Lists;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBRef;
@@ -163,5 +169,13 @@ public abstract class AbstractMongoDao<K, E, C extends Paginated<? super E>> {
 
     protected static BasicDBObjectBuilder bson() {
         return new BasicDBObjectBuilder();
+    }
+    
+    public Collection<ObjectId> toObjectIds(Collection<String> ids) {
+        List<ObjectId> objectIds = Lists.newArrayListWithCapacity(ids.size());
+        for (String id : ids) {
+            objectIds.add(new ObjectId(id));
+        }
+        return objectIds;
     }
 }

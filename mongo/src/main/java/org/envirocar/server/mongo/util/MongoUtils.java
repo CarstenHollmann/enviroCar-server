@@ -16,12 +16,14 @@
  */
 package org.envirocar.server.mongo.util;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.bson.BSONObject;
 import org.envirocar.server.core.TemporalFilter;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
@@ -166,5 +168,13 @@ public class MongoUtils {
                         tf.getOperator());
         }
         return time;
+    }
+    
+    public static DBObject or(String path, Collection<?> values) {
+        List<DBObject> objects = Lists.newArrayListWithCapacity(values.size());
+        for (Object value : values) {
+            objects.add(new BasicDBObject(path, value));
+        }
+        return new BasicDBObject(Ops.OR, objects); 
     }
 }

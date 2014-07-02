@@ -16,6 +16,7 @@
  */
 package org.envirocar.server.core.dao;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.envirocar.server.core.entities.Measurement;
