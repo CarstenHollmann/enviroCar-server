@@ -42,4 +42,5 @@ public interface Ops {
     String OR = QueryOperators.OR;
     String OAND = QueryOperators.AND;
     String SORT = "$sort";
+    String PUSH = "$push";
 }

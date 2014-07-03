@@ -181,4 +181,8 @@ public class MongoUtils {
     public static DBObject sort(DBObject fields) {
         return new BasicDBObject(Ops.SORT, fields); 
     }
+
+    public static Object push(String object) {
+        return new BasicDBObject(Ops.PUSH, object); 
+    }
 }

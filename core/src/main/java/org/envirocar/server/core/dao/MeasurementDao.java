@@ -46,5 +46,5 @@ public interface MeasurementDao {
 
     List<Geometry> getGeometries(Track track);
 
-    Map<String, Map<DateTime, Geometry>> getGeometries(Collection<String> foiIDs);
+    Map<String, List<Geometry>> getGeometries(Collection<String> foiIDs);
 }
