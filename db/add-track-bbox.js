@@ -26,3 +26,4 @@ db.tracks.find().forEach(function(track) {
 });
 
 db.measurements.ensureIndex({ "sensor._id" : -1 },{ "name" : "sensor._id_" });
+

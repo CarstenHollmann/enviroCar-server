@@ -39,6 +39,7 @@ public interface Ops {
     String GREATER_THAN = "$gt";
     String LESS_THAN = "$lt";
     String EQUALS = "$eq";
-    String OR = "$or";
-    String OAND = "$and";
+    String OR = QueryOperators.OR;
+    String OAND = QueryOperators.AND;
+    String SORT = "$sort";
 }

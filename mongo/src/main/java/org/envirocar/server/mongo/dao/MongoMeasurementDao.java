@@ -18,8 +18,9 @@ package org.envirocar.server.mongo.dao;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.bson.BSONObject;
 import org.bson.types.ObjectId;
@@ -27,8 +28,6 @@ import org.envirocar.server.core.TemporalFilter;
 import org.envirocar.server.core.dao.MeasurementDao;
 import org.envirocar.server.core.entities.Measurement;
 import org.envirocar.server.core.entities.Measurements;
-import org.envirocar.server.core.entities.Phenomenon;
-import org.envirocar.server.core.entities.Sensor;
 import org.envirocar.server.core.entities.Track;
 import org.envirocar.server.core.entities.User;
 import org.envirocar.server.core.exception.GeometryConverterException;
@@ -38,14 +37,12 @@ import org.envirocar.server.core.util.GeometryConverter;
 import org.envirocar.server.core.util.Pagination;
 import org.envirocar.server.mongo.MongoDB;
 import org.envirocar.server.mongo.entity.MongoMeasurement;
-import org.envirocar.server.mongo.entity.MongoPhenomenon;
 import org.envirocar.server.mongo.entity.MongoSensor;
-import org.envirocar.server.mongo.entity.MongoStatistic;
 import org.envirocar.server.mongo.entity.MongoTrack;
 import org.envirocar.server.mongo.entity.MongoUser;
 import org.envirocar.server.mongo.util.MongoUtils;
 import org.envirocar.server.mongo.util.MorphiaUtils;
-import org.envirocar.server.mongo.util.Ops;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +54,7 @@ import com.github.jmkgreen.morphia.query.Query;
 import com.github.jmkgreen.morphia.query.QueryImpl;
 import com.github.jmkgreen.morphia.query.UpdateResults;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.mongodb.AggregationOutput;
 import com.mongodb.BasicDBList;
@@ -67,6 +65,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.DBRef;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  * TODO JavaDoc
@@ -80,16 +79,14 @@ public class MongoMeasurementDao extends AbstractMongoDao<ObjectId, MongoMeasure
     private static final Logger log = LoggerFactory.getLogger(MongoMeasurementDao.class);
 
     private static final String TRACKS = "tracks";
-
-    private static final String TRACK_NAME_PATH = MongoUtils.path(TRACKS, MongoMeasurement.TRACK,
-            MongoMeasurement.IDENTIFIER);
-
-    private static final String TRACK_NAME_VALUE = MongoUtils.valueOf(TRACK_NAME_PATH);
-
-    public static final String TRACK_VALUE = MongoUtils.valueOf(MongoMeasurement.TRACK);
-
+    private static final String TRACK_NAME_PATH = MongoUtils.path(TRACKS,
+                                                                  MongoMeasurement.TRACK, MongoMeasurement.IDENTIFIER);
+    private static final String TRACK_NAME_VALUE = MongoUtils
+            .valueOf(TRACK_NAME_PATH);
+    public static final String TRACK_VALUE = MongoUtils
+            .valueOf(MongoMeasurement.TRACK);
     private final GeometryConverter<BSONObject> geometryConverter;
-
+    
     @Inject
     private MongoTrackDao trackDao;
 
@@ -268,9 +265,11 @@ public class MongoMeasurementDao extends AbstractMongoDao<ObjectId, MongoMeasure
         return toKeyList(out.results());
     }
 
-    private AggregationOutput aggregate(DBObject firstOp, DBObject... additionalOps) {
-        AggregationOutput result =
-                getMongoDB().getDatastore().getCollection(MongoMeasurement.class).aggregate(firstOp, additionalOps);
+    private AggregationOutput aggregate(DBObject firstOp,
+                                        DBObject... additionalOps) {
+        AggregationOutput result = getMongoDB().getDatastore()
+                .getCollection(MongoMeasurement.class)
+                .aggregate(firstOp, additionalOps);
         result.getCommandResult().throwOnError();
         return result;
     }
@@ -350,10 +349,58 @@ public class MongoMeasurementDao extends AbstractMongoDao<ObjectId, MongoMeasure
 
     @Override
     public List<Geometry> getGeometries(Track track) {
-        // TODO Auto-generated method stub
-        return Lists.newArrayList();
+        BasicDBObject sortFields = new BasicDBObject();
+        sortFields.put(MongoMeasurement.TIME, 1);
+        
+        BasicDBObject projectFields = new BasicDBObject();
+//        projectFields.put(MongoMeasurement.TIME, MongoUtils.valueOf(MongoMeasurement.TIME));
+        projectFields.put(MongoMeasurement.GEOMETRY, MongoUtils.valueOf(MongoMeasurement.GEOMETRY));
+        
+        AggregationOutput aggregate = aggregate(matchTrack(track), MongoUtils.sort(sortFields), MongoUtils.project(projectFields));
+        List<Geometry> geoms = Lists.newArrayList();
+        for (DBObject dbObject : aggregate.results()) {
+            if (dbObject.containsField(MongoMeasurement.GEOMETRY)) {
+                try {
+                    geoms.add(geometryConverter.decodeGeometry((BSONObject)dbObject.get(MongoMeasurement.GEOMETRY)));
+                } catch (GeometryConverterException e) {
+                }
+            }
+        }
+        return geoms;
     }
 
+    @Override
+    public Map<String, Map<DateTime, Geometry>> getGeometries(Collection<String> foiIDs) {
+        List<DBRef> tracks = Lists.newLinkedList();
+        for (String id : foiIDs) {
+            MongoTrack mongoTrack = new MongoTrack();
+            mongoTrack.setIdentifier(id);
+            tracks.add(ref(mongoTrack));
+        }
+        AggregationOutput aggregate = aggregate(matchTracks(tracks), sortTracks());
+        aggregate.results();
+        return null;
+    }
+    
+    private DBObject matchTracks(List<DBRef> tracks) {
+        return MongoUtils.match(MongoUtils.or(MongoMeasurement.TRACK, tracks));
+    }
+    
+    private DBObject projectTracks(List<DBRef> tracks) {
+        return MongoUtils.match(MongoUtils.or(MongoMeasurement.TRACK, tracks));
+    }
+    
+    private DBObject groupTracks(List<DBRef> tracks) {
+        return MongoUtils.match(MongoUtils.or(MongoMeasurement.TRACK, tracks));
+    }
+    
+    private DBObject sortTracks() {
+        BasicDBObject fields = new BasicDBObject();
+        fields.put(MongoMeasurement.TRACK, 1);
+        fields.put(MongoMeasurement.TIME, 1);
+        return MongoUtils.sort(fields);
+    }
+    
     public Iterable<DBObject> getDistinctPhenomenons() {
         AggregationOutput aggregate = aggregate(unwindPhenomenons(), groupPhenMap());
         return aggregate.results();
@@ -438,25 +485,43 @@ public class MongoMeasurementDao extends AbstractMongoDao<ObjectId, MongoMeasure
 
         final AggregationOutput out;
         if (filters.isEmpty()) {
-            out = aggregate(project(), group());
+            out = aggregate(projectTrackIds(), groupTrackIds());
         } else {
             int size = filters.size();
             if (size == 1) {
-                out = aggregate(filters.get(0), project(), group());
+                out = aggregate(filters.get(0), projectTrackIds(), groupTrackIds());
             } else {
                 DBObject first = filters.get(0);
                 DBObject[] other = new DBObject[size + 1];
                 for (int i = 1; i < size; ++i) {
                     other[i - 1] = filters.get(i);
                 }
-                other[other.length - 2] = project();
-                other[other.length - 1] = group();
+                other[other.length - 2] = projectTrackIds();
+                other[other.length - 1] = groupTrackIds();
                 out = aggregate(first, other);
             }
         }
-        toKeyList(out.results());
-        return null;
+        return toIdList(out.results());
     }
+    
+    private Collection<String> toIdList(Iterable<DBObject> res) {
+        Set<String> ids = Sets.newLinkedHashSet();
+        for (Key<MongoTrack> key : toKeyList(res)) {
+            ids.add(key.getId().toString());
+        }
+        return ids;
+    }
+
+    private DBObject projectTrackIds() {
+        return MongoUtils.project(new BasicDBObject(MongoMeasurement.TRACK, 1));
+    }
+    
+     private DBObject groupTrackIds() {
+         BasicDBObject fields = new BasicDBObject();
+         fields.put(ID, TRACK_NAME_VALUE);
+         fields.put(TRACKS, MongoUtils.addToSet(TRACK_VALUE));
+         return MongoUtils.group(fields);
+     }
 
     private DBObject matchGeometries(Collection<Geometry> geometries) {
         try {
@@ -471,7 +536,7 @@ public class MongoMeasurementDao extends AbstractMongoDao<ObjectId, MongoMeasure
     }
 
     private DBObject matchSensorIds(Collection<String> sensorIds) {
-        return MongoUtils.match(MongoUtils.path(MongoMeasurement.SENSOR, Mapper.ID_KEY), toObjectIds(sensorIds));
+        return MongoUtils.match(MongoUtils.or(MongoUtils.path(MongoMeasurement.SENSOR, Mapper.ID_KEY), toObjectIds(sensorIds)));
     }
 
     private DBObject matchPhenomenonIds(Collection<String> phenomenonIds) {
@@ -482,4 +547,5 @@ public class MongoMeasurementDao extends AbstractMongoDao<ObjectId, MongoMeasure
         return MongoUtils.match(MongoUtils.or(
                 MongoUtils.path(MongoMeasurement.PHENOMENONS, MongoMeasurement.PHEN, Mapper.ID_KEY), phenomenonIds));
     }
+    
 }

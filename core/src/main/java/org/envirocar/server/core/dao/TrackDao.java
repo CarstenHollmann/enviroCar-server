@@ -23,7 +23,6 @@ import org.envirocar.server.core.entities.Tracks;
 import org.envirocar.server.core.filter.TrackFilter;
 
 import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * TODO JavaDoc
@@ -43,12 +42,11 @@ public interface TrackDao {
 
     Tracks get(TrackFilter request);
 
+    void calculateBoundingBox(Track track);
+
     Tracks get();
 
     Collection<String> getIdentifier();
 
     Envelope getBBox(TrackFilter request);
-
-
-    void calculateBoundingBox(Track track);
 }

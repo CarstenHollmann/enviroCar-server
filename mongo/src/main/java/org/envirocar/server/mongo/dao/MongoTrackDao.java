@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.bson.types.ObjectId;
 import org.envirocar.server.core.dao.TrackDao;
+import org.envirocar.server.core.entities.Sensor;
 import org.envirocar.server.core.entities.Track;
 import org.envirocar.server.core.entities.Tracks;
 import org.envirocar.server.core.filter.MeasurementFilter;
@@ -55,7 +56,6 @@ import com.google.inject.Inject;
 import com.mongodb.AggregationOutput;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
-import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBObject;
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -166,9 +166,17 @@ public class MongoTrackDao extends AbstractMongoDao<ObjectId, MongoTrack, Tracks
         }
         if (request.hasSensors()) {
             // TODO check if it works
-            q.field(MongoTrack.SENSOR).in(request.getSensors());
+            q.field(MongoUtils.path(MongoTrack.SENSOR, MongoSensor.NAME)).in(toObjectIdList(request.getSensors()));
         }
         return fetch(q, request.getPagination());
+    }
+
+    private Iterable<?> toObjectIdList(Collection<Sensor> sensors) {
+        List<ObjectId> ids = Lists.newLinkedList();
+        for (Sensor sensor : sensors) {
+            ids.add(new ObjectId(sensor.getIdentifier()));
+        }
+        return ids;
     }
 
     @Override

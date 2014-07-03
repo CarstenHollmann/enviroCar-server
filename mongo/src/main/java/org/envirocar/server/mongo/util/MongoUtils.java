@@ -177,4 +177,8 @@ public class MongoUtils {
         }
         return new BasicDBObject(Ops.OR, objects); 
     }
+    
+    public static DBObject sort(DBObject fields) {
+        return new BasicDBObject(Ops.SORT, fields); 
+    }
 }

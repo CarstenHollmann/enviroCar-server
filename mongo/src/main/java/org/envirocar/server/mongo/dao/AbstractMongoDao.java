@@ -162,15 +162,15 @@ public abstract class AbstractMongoDao<K, E, C extends Paginated<? super E>> {
     public MongoDB getMongoDB() {
         return this.mongoDB;
     }
-    
-    public DBObject getDBObject(Query<E> q) {
-        return ((QueryImpl<E>)q).getQueryObject();
-    }
 
     protected static BasicDBObjectBuilder bson() {
         return new BasicDBObjectBuilder();
     }
     
+    public DBObject getDBObject(Query<E> q) {
+        return ((QueryImpl<E>)q).getQueryObject();
+    }
+
     public Collection<ObjectId> toObjectIds(Collection<String> ids) {
         List<ObjectId> objectIds = Lists.newArrayListWithCapacity(ids.size());
         for (String id : ids) {

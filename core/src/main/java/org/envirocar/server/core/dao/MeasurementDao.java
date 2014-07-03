@@ -18,11 +18,13 @@ package org.envirocar.server.core.dao;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.envirocar.server.core.entities.Measurement;
 import org.envirocar.server.core.entities.Measurements;
 import org.envirocar.server.core.entities.Track;
 import org.envirocar.server.core.filter.MeasurementFilter;
+import org.joda.time.DateTime;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -43,4 +45,6 @@ public interface MeasurementDao {
     Measurements get(MeasurementFilter request);
 
     List<Geometry> getGeometries(Track track);
+
+    Map<String, Map<DateTime, Geometry>> getGeometries(Collection<String> foiIDs);
 }
