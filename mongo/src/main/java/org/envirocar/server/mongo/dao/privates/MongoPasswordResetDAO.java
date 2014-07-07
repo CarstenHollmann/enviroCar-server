@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory;
 
 import com.github.jmkgreen.morphia.query.Query;
 import com.google.inject.Inject;
+import com.mongodb.AggregationOutput;
+import com.mongodb.DBObject;
 
 public class MongoPasswordResetDAO extends AbstractMongoDao<ObjectId, MongoPasswordReset, MongoPasswordResetDAO.MongoPasswordResetStatusCollection> 
 	implements PasswordResetDAO {
@@ -114,6 +116,11 @@ public class MongoPasswordResetDAO extends AbstractMongoDao<ObjectId, MongoPassw
             super(builder);
         }
 
+    }
+
+    @Override
+    protected AggregationOutput aggregate(DBObject firstOp, DBObject... additionalOps) {
+        return aggregate(MongoPasswordReset.class, firstOp, additionalOps);
     }
 
 

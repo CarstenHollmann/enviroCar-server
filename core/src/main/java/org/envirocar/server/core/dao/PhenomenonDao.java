@@ -17,10 +17,10 @@
 package org.envirocar.server.core.dao;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.envirocar.server.core.entities.Phenomenon;
 import org.envirocar.server.core.entities.Phenomenons;
-import org.envirocar.server.core.filter.PhenomenonFilter;
 import org.envirocar.server.core.util.Pagination;
 
 /**
@@ -36,4 +36,8 @@ public interface PhenomenonDao {
     Phenomenon create(Phenomenon phenomenon);
 
     Collection<String> getIdentifier();
+
+    Collection<String> getPhenomenonsForSensorId(String sensorId);
+
+    Map<String, Collection<String>> getPhenomenonSensorsMap();
 }

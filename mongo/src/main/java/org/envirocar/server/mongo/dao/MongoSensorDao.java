@@ -18,24 +18,11 @@ package org.envirocar.server.mongo.dao;
 
 import java.text.DecimalFormatSymbols;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
-
-import com.github.jmkgreen.morphia.Key;
-import com.github.jmkgreen.morphia.mapping.Mapper;
-import com.github.jmkgreen.morphia.query.Query;
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
-import com.google.inject.Inject;
-import com.mongodb.BasicDBList;
-import com.mongodb.DBObject;
-
 import org.envirocar.server.core.dao.SensorDao;
 import org.envirocar.server.core.entities.Sensor;
 import org.envirocar.server.core.entities.Sensors;
@@ -46,6 +33,17 @@ import org.envirocar.server.mongo.MongoDB;
 import org.envirocar.server.mongo.entity.MongoMeasurement;
 import org.envirocar.server.mongo.entity.MongoSensor;
 import org.envirocar.server.mongo.util.MongoUtils;
+
+import com.github.jmkgreen.morphia.Key;
+import com.github.jmkgreen.morphia.mapping.Mapper;
+import com.github.jmkgreen.morphia.query.Query;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.inject.Inject;
+import com.mongodb.AggregationOutput;
+import com.mongodb.BasicDBList;
+import com.mongodb.DBObject;
 
 /**
  * TODO JavaDoc
@@ -187,21 +185,19 @@ public class MongoSensorDao extends AbstractMongoDao<ObjectId, MongoSensor, Sens
         return q.asKeyList();
     }
 
-
-    public Map<String, Collection<String>> getPhenomenonSensorsMap() {
-        Map<String, Collection<String>> sensorMap = Maps.newHashMap();
-        for (DBObject dbo : measurementDao.getDistinctSensors()) {
-            sensorMap.put(dbo.get(Mapper.ID_KEY).toString(), toList((BasicDBList)dbo.get(MongoMeasurement.SENSORS)));
+    @Override
+    public Map<String, Collection<String>> getSensorPhenomenonsMap() {
+        Map<String, Collection<String>> phenMap = Maps.newHashMap();
+        for (DBObject dbo : measurementDao.getDistinctPhenomenons()) {
+            phenMap.put(dbo.get(Mapper.ID_KEY).toString(), toList((BasicDBList)dbo.get(MongoMeasurement.PHENOMENONS)));
         }
-        return sensorMap;
+        return phenMap;
     }
 
-    private Collection<String> toList(BasicDBList basicDBList) {
-        HashSet<String> set = Sets.newHashSet();
-        for (Object object : basicDBList) {
-            set.add(object.toString());
-        }
-        return set;
+    @Override
+    protected AggregationOutput aggregate(DBObject firstOp, DBObject... additionalOps) {
+        return aggregate(MongoSensor.class, firstOp, additionalOps);
     }
+
 
 }

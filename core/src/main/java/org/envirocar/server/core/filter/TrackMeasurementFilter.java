@@ -16,14 +16,12 @@
  */
 package org.envirocar.server.core.filter;
 
-import java.beans.FeatureDescriptor;
 import java.util.Collection;
-import java.util.List;
 
 import com.google.common.collect.Sets;
 import com.vividsolutions.jts.geom.Geometry;
 
-public class MeasurementFeatureFilter {
+public class TrackMeasurementFilter {
     
     private Collection<String> sensorIds;
     
@@ -31,7 +29,7 @@ public class MeasurementFeatureFilter {
     
     private Collection<Geometry> geometries;
 
-    public MeasurementFeatureFilter setSensorIds(Collection<String> sensorIds) {
+    public TrackMeasurementFilter setSensorIds(Collection<String> sensorIds) {
         this.sensorIds = sensorIds;
         return this;
     }
@@ -44,7 +42,7 @@ public class MeasurementFeatureFilter {
         return getSensorIds() != null && !getSensorIds().isEmpty();
     }
  
-    public MeasurementFeatureFilter setPhenomenonIds(Collection<String> phenomenonIds) {
+    public TrackMeasurementFilter setPhenomenonIds(Collection<String> phenomenonIds) {
         this.phenomenonIds = phenomenonIds;
         return this;
     }
@@ -57,7 +55,7 @@ public class MeasurementFeatureFilter {
         return getPhenomenonIds() != null && !getPhenomenonIds().isEmpty();
     }
 
-    public MeasurementFeatureFilter addGeometry(Geometry geometry) {
+    public TrackMeasurementFilter addGeometry(Geometry geometry) {
         if (getGeometries() == null) {
             this.geometries = Sets.newHashSet();
         }

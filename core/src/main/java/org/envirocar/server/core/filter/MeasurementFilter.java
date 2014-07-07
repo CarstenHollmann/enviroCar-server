@@ -17,7 +17,6 @@
 package org.envirocar.server.core.filter;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.envirocar.server.core.TemporalFilter;
 import org.envirocar.server.core.entities.Phenomenon;
@@ -36,12 +35,15 @@ import com.vividsolutions.jts.geom.Geometry;
 public class MeasurementFilter {
     private final Track track;
     private final User user;
-    private final Geometry geometry;
+    private Geometry geometry;
     private final Pagination pagination;
-    private final TemporalFilter temporalFilter;
+    private TemporalFilter temporalFilter;
     private Iterable<Sensor> sensors;
     private Iterable<Phenomenon> phenomenon;
     private Iterable<Track> tracks;
+    private Collection<String> trackIds;
+    private Collection<String> phenomenonIds;
+    private Collection<String> sensorIds;
     
     public MeasurementFilter() {
         this(null);
@@ -115,6 +117,11 @@ public class MeasurementFilter {
     public boolean hasPagination() {
         return pagination != null;
     }
+    
+    public MeasurementFilter setTemporalFilter(TemporalFilter tf) {
+        this.temporalFilter = tf;
+        return this;
+    }
 
     public TemporalFilter getTemporalFilter() {
         return temporalFilter;
@@ -160,5 +167,45 @@ public class MeasurementFilter {
     
     public boolean hasTracks() {
         return getTracks() != null;
+    }
+
+    public void setGeometry(Geometry geometry) {
+        this.geometry = geometry;
+    }
+    
+    public void setTrackIds(Collection<String> trackIds) {
+       this.trackIds = trackIds;
+    }
+
+    public void setPhenomenonIds(Collection<String> phenomenonIds) {
+        this.phenomenonIds = phenomenonIds;
+    }
+
+    public void setSensorIds(Collection<String> sensorIds) {
+        this.sensorIds = sensorIds;
+    }
+
+    public boolean hasSensorIds() {
+        return getSensorIds() != null && !getSensorIds().isEmpty();
+    }
+
+    public boolean hasPhenomenonIds() {
+        return getPhenomenonIds() != null && !getPhenomenonIds().isEmpty();
+    }
+
+    public boolean hasTrackIds() {
+        return getTrackIds() != null && !getTrackIds().isEmpty();
+    }
+
+    public Collection<String> getSensorIds() {
+        return sensorIds;
+    }
+
+    public Collection<String> getPhenomenonIds() {
+        return phenomenonIds;
+    }
+
+    public Collection<String> getTrackIds() {
+        return trackIds;
     }
 }

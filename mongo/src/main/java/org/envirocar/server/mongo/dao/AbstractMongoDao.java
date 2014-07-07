@@ -17,17 +17,14 @@
 package org.envirocar.server.mongo.dao;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import org.bson.types.ObjectId;
-import org.envirocar.server.core.entities.Phenomenons;
-import org.envirocar.server.core.filter.PhenomenonFilter;
 import org.envirocar.server.core.util.Paginated;
 import org.envirocar.server.core.util.Pagination;
 import org.envirocar.server.mongo.MongoDB;
 import org.envirocar.server.mongo.entity.MongoEntityBase;
-import org.envirocar.server.mongo.util.Ops;
-import org.ietf.jgss.Oid;
 import org.joda.time.DateTime;
 
 import com.github.jmkgreen.morphia.Datastore;
@@ -39,9 +36,11 @@ import com.github.jmkgreen.morphia.query.QueryImpl;
 import com.github.jmkgreen.morphia.query.UpdateOperations;
 import com.github.jmkgreen.morphia.query.UpdateResults;
 import com.google.common.collect.Lists;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import com.google.common.collect.Sets;
+import com.mongodb.AggregationOutput;
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.DBObject;
 import com.mongodb.DBRef;
 import com.mongodb.WriteResult;
 
@@ -134,6 +133,15 @@ public abstract class AbstractMongoDao<K, E, C extends Paginated<? super E>> {
         update((K) this.mongoDB.getMapper().getId(e), up()
                 .set(MongoEntityBase.LAST_MODIFIED, new DateTime()));
     }
+    
+    protected abstract AggregationOutput aggregate(DBObject firstOp, DBObject... additionalOps);
+    
+    protected AggregationOutput aggregate(Class<?> c, DBObject firstOp, DBObject... additionalOps) {
+        AggregationOutput result =
+                getMongoDB().getDatastore().getCollection(c).aggregate(firstOp, additionalOps);
+        result.getCommandResult().throwOnError();
+        return result;
+    }
 
     public <T> T deref(Class<T> c, Key<T> key) {
         return mongoDB.deref(c, key);
@@ -171,11 +179,19 @@ public abstract class AbstractMongoDao<K, E, C extends Paginated<? super E>> {
         return ((QueryImpl<E>)q).getQueryObject();
     }
 
-    public Collection<ObjectId> toObjectIds(Collection<String> ids) {
+    protected Collection<ObjectId> toObjectIds(Collection<String> ids) {
         List<ObjectId> objectIds = Lists.newArrayListWithCapacity(ids.size());
         for (String id : ids) {
             objectIds.add(new ObjectId(id));
         }
         return objectIds;
+    }
+    
+    protected Collection<String> toList(BasicDBList basicDBList) {
+        HashSet<String> set = Sets.newHashSet();
+        for (Object object : basicDBList) {
+            set.add(object.toString());
+        }
+        return set;
     }
 }

@@ -18,18 +18,7 @@ package org.envirocar.server.mongo.dao;
 
 import java.util.List;
 
-import com.github.jmkgreen.morphia.dao.BasicDAO;
-import com.github.jmkgreen.morphia.mapping.Mapper;
-import com.google.common.collect.Lists;
-import com.google.inject.Inject;
-import com.mongodb.AggregationOutput;
-import com.mongodb.BasicDBObject;
-import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DBObject;
-import com.mongodb.DBRef;
-
 import org.envirocar.server.core.dao.StatisticsDao;
-
 import org.envirocar.server.core.entities.Phenomenon;
 import org.envirocar.server.core.filter.StatisticsFilter;
 import org.envirocar.server.core.statistics.Statistic;
@@ -44,9 +33,18 @@ import org.envirocar.server.mongo.entity.MongoStatisticKey;
 import org.envirocar.server.mongo.entity.MongoStatistics;
 import org.envirocar.server.mongo.entity.MongoTrack;
 import org.envirocar.server.mongo.entity.MongoUser;
-
 import org.envirocar.server.mongo.util.MongoUtils;
 import org.envirocar.server.mongo.util.Ops;
+
+import com.github.jmkgreen.morphia.dao.BasicDAO;
+import com.github.jmkgreen.morphia.mapping.Mapper;
+import com.google.common.collect.Lists;
+import com.google.inject.Inject;
+import com.mongodb.AggregationOutput;
+import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.DBObject;
+import com.mongodb.DBRef;
 
 /**
  * TODO JavaDoc

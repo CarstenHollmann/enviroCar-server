@@ -29,6 +29,8 @@ import org.envirocar.server.mongo.util.MorphiaUtils;
 
 import com.github.jmkgreen.morphia.query.Query;
 import com.google.inject.Inject;
+import com.mongodb.AggregationOutput;
+import com.mongodb.DBObject;
 
 /**
  * Mongo implementation of a {@link FuelingDao}.
@@ -82,6 +84,11 @@ public class MongoFuelingDao extends AbstractMongoDao<ObjectId, MongoFueling, Fu
 
     void removeUser(MongoUser user) {
         delete(q().field(MongoFueling.USER).equal(key(user)));
+    }
+
+    @Override
+    protected AggregationOutput aggregate(DBObject firstOp, DBObject... additionalOps) {
+        return aggregate(MongoFueling.class, firstOp, additionalOps);
     }
 
 }

@@ -17,12 +17,16 @@
 package org.envirocar.server.core.dao;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import org.envirocar.server.core.entities.Track;
 import org.envirocar.server.core.entities.Tracks;
 import org.envirocar.server.core.filter.TrackFilter;
+import org.envirocar.server.core.filter.TrackMeasurementFilter;
 
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * TODO JavaDoc
@@ -49,4 +53,10 @@ public interface TrackDao {
     Collection<String> getIdentifier();
 
     Envelope getBBox(TrackFilter request);
+
+    Map<String, List<Geometry>> getGeometries(Collection<String> trackIds);
+
+    List<Geometry> getGeometries(Track track);
+
+    Collection<String> getTrackIds(TrackMeasurementFilter measurementFilter);
 }

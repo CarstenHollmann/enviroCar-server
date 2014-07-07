@@ -39,6 +39,8 @@ import com.github.jmkgreen.morphia.query.Query;
 import com.github.jmkgreen.morphia.query.UpdateResults;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.mongodb.AggregationOutput;
+import com.mongodb.DBObject;
 
 /**
  * TODO JavaDoc
@@ -277,5 +279,10 @@ public class MongoUserDao extends AbstractMongoDao<String, MongoUser, Users>
 		
 		return Users.from(deref(MongoUser.class, result)).build();
 	}
+
+    @Override
+    protected AggregationOutput aggregate(DBObject firstOp, DBObject... additionalOps) {
+        return aggregate(MongoUser.class, firstOp, additionalOps);
+    }
 	
 }

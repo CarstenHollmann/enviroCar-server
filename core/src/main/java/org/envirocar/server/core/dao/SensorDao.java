@@ -17,6 +17,7 @@
 package org.envirocar.server.core.dao;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.envirocar.server.core.entities.Sensor;
 import org.envirocar.server.core.entities.Sensors;
@@ -39,4 +40,6 @@ public interface SensorDao {
     Collection<String> getTypes();
 
     Sensors get(Pagination p);
+
+    Map<String, Collection<String>> getSensorPhenomenonsMap();
 }

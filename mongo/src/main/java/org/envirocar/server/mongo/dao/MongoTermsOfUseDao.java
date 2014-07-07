@@ -26,6 +26,8 @@ import org.envirocar.server.mongo.entity.MongoTermsOfUseInstance;
 import org.envirocar.server.mongo.util.MongoUtils;
 
 import com.google.inject.Inject;
+import com.mongodb.AggregationOutput;
+import com.mongodb.DBObject;
 
 /**
  * @author matthes rieke
@@ -60,5 +62,10 @@ public class MongoTermsOfUseDao extends AbstractMongoDao<ObjectId, MongoTermsOfU
         }
         return super.get(oid);
 	}
+
+    @Override
+    protected AggregationOutput aggregate(DBObject firstOp, DBObject... additionalOps) {
+        return aggregate(MongoTermsOfUseInstance.class, firstOp, additionalOps);
+    }
 
 }

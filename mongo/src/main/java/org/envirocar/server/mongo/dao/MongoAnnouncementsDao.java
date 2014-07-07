@@ -25,6 +25,8 @@ import org.envirocar.server.mongo.MongoDB;
 import org.envirocar.server.mongo.entity.MongoAnnouncement;
 
 import com.google.inject.Inject;
+import com.mongodb.AggregationOutput;
+import com.mongodb.DBObject;
 
 public class MongoAnnouncementsDao extends AbstractMongoDao<ObjectId, MongoAnnouncement, Announcements>
 		implements AnnouncementsDao {
@@ -55,5 +57,10 @@ public class MongoAnnouncementsDao extends AbstractMongoDao<ObjectId, MongoAnnou
 		}
 		return super.get(oid);
 	}
+
+    @Override
+    protected AggregationOutput aggregate(DBObject firstOp, DBObject... additionalOps) {
+        return aggregate(MongoAnnouncement.class, firstOp, additionalOps);
+    }
 
 }

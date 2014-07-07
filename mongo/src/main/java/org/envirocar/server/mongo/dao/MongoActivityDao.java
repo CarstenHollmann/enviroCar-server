@@ -30,6 +30,8 @@ import org.envirocar.server.mongo.entity.MongoUser;
 
 import com.github.jmkgreen.morphia.query.Query;
 import com.google.inject.Inject;
+import com.mongodb.AggregationOutput;
+import com.mongodb.DBObject;
 
 /**
  * TODO JavaDoc
@@ -136,5 +138,10 @@ public class MongoActivityDao extends AbstractMongoDao<ObjectId, MongoActivity, 
             return null;
         }
         return q.get();
+    }
+
+    @Override
+    protected AggregationOutput aggregate(DBObject firstOp, DBObject... additionalOps) {
+        return aggregate(MongoActivity.class, firstOp, additionalOps);
     }
 }

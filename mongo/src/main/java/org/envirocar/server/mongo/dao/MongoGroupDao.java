@@ -19,6 +19,15 @@ package org.envirocar.server.mongo.dao;
 import java.util.Collections;
 import java.util.Set;
 
+import org.envirocar.server.core.dao.GroupDao;
+import org.envirocar.server.core.entities.Group;
+import org.envirocar.server.core.entities.Groups;
+import org.envirocar.server.core.entities.User;
+import org.envirocar.server.core.entities.Users;
+import org.envirocar.server.core.util.Pagination;
+import org.envirocar.server.mongo.MongoDB;
+import org.envirocar.server.mongo.entity.MongoGroup;
+import org.envirocar.server.mongo.entity.MongoUser;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,17 +37,8 @@ import com.github.jmkgreen.morphia.query.Query;
 import com.github.jmkgreen.morphia.query.UpdateResults;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-
-import org.envirocar.server.core.dao.GroupDao;
-
-import org.envirocar.server.core.entities.Group;
-import org.envirocar.server.core.entities.Groups;
-import org.envirocar.server.core.entities.User;
-import org.envirocar.server.core.entities.Users;
-import org.envirocar.server.core.util.Pagination;
-import org.envirocar.server.mongo.MongoDB;
-import org.envirocar.server.mongo.entity.MongoGroup;
-import org.envirocar.server.mongo.entity.MongoUser;
+import com.mongodb.AggregationOutput;
+import com.mongodb.DBObject;
 
 /**
  * TODO JavaDoc
@@ -226,5 +226,10 @@ public class MongoGroupDao extends AbstractMongoDao<String, MongoGroup, Groups>
         Iterable<Key<User>> users = Lists.newArrayList(key(user1),
                                                        key(user2));
         return q().field(MongoGroup.MEMBERS).hasAllOf(users).getKey() != null;
+    }
+
+    @Override
+    protected AggregationOutput aggregate(DBObject firstOp, DBObject... additionalOps) {
+        return aggregate(MongoGroup.class, firstOp, additionalOps);
     }
 }

@@ -24,6 +24,8 @@ import org.envirocar.server.mongo.MongoDB;
 import org.envirocar.server.mongo.entity.MongoBadge;
 
 import com.google.inject.Inject;
+import com.mongodb.AggregationOutput;
+import com.mongodb.DBObject;
 
 public class MongoBadgesDao extends AbstractMongoDao<ObjectId, MongoBadge, Badges>
 		implements BadgesDao {
@@ -43,6 +45,11 @@ public class MongoBadgesDao extends AbstractMongoDao<ObjectId, MongoBadge, Badge
 			Iterable<MongoBadge> i, Pagination p, long count) {
 		return Badges.from(i).withPagination(p).withElements(count).build();
 	}
+
+    @Override
+    protected AggregationOutput aggregate(DBObject firstOp, DBObject... additionalOps) {
+        return aggregate(MongoBadge.class, firstOp, additionalOps);
+    }
 
 
 }
